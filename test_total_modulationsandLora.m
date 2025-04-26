@@ -1,75 +1,114 @@
 function test_total_modulationsandLora(msg_length)
-    tic;
-    % Generate binary message
-    n = msg_length;
-    b = randi([0, 1], 1, n);
-    samples_per_bit = 30;
-    bitrate = 366.2;           % Example bitrate (e.g., from LoRa)
-    BW = 125e3;
-    fs = bitrate * samples_per_bit;
-    t = 0:1/samples_per_bit:1 - 1/samples_per_bit;
+
+    tic; %timer to see how long is the simulation
+    n = msg_length; %number of bits to simulate
+    b = randi([0, 1], 1, n); %generate the binary message b
+    samples_per_bit = 30; %how many samples in one bit => oversampling factor
+    bitrate = 366.2; % Example bitrate (from LoRa study) => take the precise one
+    BW = 125e3; %bandwidth available (in Hz)
+    fs = bitrate * samples_per_bit; %calculates the sampling frequency based on the bit rate and the oversampling
+    t = 0:1/samples_per_bit:1 - 1/samples_per_bit; %time vector for one symbol duration
 
     %% BPSK waveform setup
-    f = 1;
-    sp0 = -sin(2*pi*f*t); sp0 = sp0 / norm(sp0);
-    sp1 = sin(2*pi*f*t);  sp1 = sp1 / norm(sp1);
+    f = 1; % carrier frequency (normalized to 1 unit)
+    sp0 = -sin(2*pi*f*t); %BPSK reference signal for '0' 
+    sp0 = sp0 / norm(sp0); %normalized to have unit energy
+    sp1 = sin(2*pi*f*t);  %for '1'
+    sp1 = sp1 / norm(sp1); %normalized
 
-    %% QPSK waveforms
-    qpsk_syms = [pi/4, 3*pi/4, 5*pi/4, 7*pi/4];
-    qpsk = [];
-    for i = 1:2:n
+    %% QPSK waveforms: EXPLAIN MORE
+    qpsk_syms = [pi/4, 3*pi/4, 5*pi/4, 7*pi/4]; %4 possible phase angles for QPSK
+    num_symbols = n/2;
+    qpsk = zeros(1, num_symbols * samples_per_bit);  % preallocate
+
+    for sym_idx = 1:num_symbols
+        i = (sym_idx-1)*2 + 1;  % current bit index
         idx = b(i)*2 + b(i+1);
         phase = qpsk_syms(idx + 1);
         symbol = cos(2*pi*f*t + phase);
-        qpsk = [qpsk symbol / norm(symbol)];
+        qpsk((sym_idx-1)*samples_per_bit + 1 : sym_idx*samples_per_bit) = symbol / norm(symbol);
+    end
+    %% BPSK modulation
+    bpsk = zeros(1, n * samples_per_bit);  % preallocate
+
+    for bit_idx = 1:n
+        if b(bit_idx) == 1
+            bpsk((bit_idx-1)*samples_per_bit + 1 : bit_idx*samples_per_bit) = sp1;
+        else
+            bpsk((bit_idx-1)*samples_per_bit + 1 : bit_idx*samples_per_bit) = sp0;
+        end
     end
 
-    %% BPSK modulation
-    bpsk = [];
-    for i = 1:n
-        bpsk = [bpsk (b(i) == 1)*sp1 + (b(i) == 0)*sp0];
-    end
 
     %% BER simulation setup
-    ebn0_range = -5:1:15;
-    ebn0_linear = 10.^(ebn0_range/10);
+    ebn0_range = -5:1:15; %range of E_b/N_0 values
+    ebn0_linear = 10.^(ebn0_range/10); % linear scale
+    % preallocates all the BER vectors
     BER_B = zeros(size(ebn0_range));
     BER_Q = zeros(size(ebn0_range));
-    BER_CF2 = zeros(size(ebn0_range));
-    BER_CF4 = zeros(size(ebn0_range));
-    BER_CF8 = zeros(size(ebn0_range));
-    BER_CF16 = zeros(size(ebn0_range));
+    BER_F2 = zeros(size(ebn0_range));
+    BER_F4 = zeros(size(ebn0_range));
+    BER_F8 = zeros(size(ebn0_range));
+    BER_F16 = zeros(size(ebn0_range));
 
-    for idx = 1:length(ebn0_range)
+    for idx = 1:length(ebn0_range) %the BER loop for each E_b/N_0 point
         ebno = ebn0_range(idx);
 
         %% BPSK detection
-        snr_B = ebno - 10*log10(samples_per_bit);
-        bpskn = awgn(bpsk, snr_B, 'measured');
-        D = [];
-        for i = 1:samples_per_bit:length(bpskn)
-            segment = bpskn(i:i+samples_per_bit-1);
-            bit = double(sum(segment .* sp1) > sum(segment .* sp0));
-            D = [D bit];
-        end
-        BER_B(idx) = sum(D ~= b) / n;
+        ebno_adjusted_B = ebno - 10*log10(samples_per_bit); %adjusts the E_b/N_0 because of oversampling (the total energy per bit spread on the samples)
+        bpskn = awgn(bpsk, ebno_adjusted_B, 'measured'); %awgn needs per sample: white gaussian noise
+        bpskn_matrix = reshape(bpskn, samples_per_bit, []); % each column = one bit segment
+
+        sp1 = sp1(:); % make sure sp1 is a column vector
+        sp0 = sp0(:); % make sure sp0 is a column vector
+        
+        corr_sp1 = sum(bpskn_matrix .* sp1, 1); % correlate with sp1
+        corr_sp0 = sum(bpskn_matrix .* sp0, 1); % correlate with sp0
+        
+        D = double(corr_sp1 > corr_sp0); % decide bit 1 if corr_sp1 > corr_sp0
+        BER_B(idx) = mean(D ~= b);
 
         %% QPSK detection
         snr_Q = ebno + 10*log10(2) - 10*log10(samples_per_bit);
         qpskn = awgn(qpsk, snr_Q, 'measured');
-        Dq = [];
-        for i = 1:samples_per_bit:length(qpskn)
-            segment = qpskn(i:i+samples_per_bit-1);
-            corrs = zeros(1,4);
-            for k = 1:4
-                ref = cos(2*pi*f*t + qpsk_syms(k));
-                corrs(k) = sum(segment .* (ref / norm(ref)));
-            end
-            [~, idx_sym] = max(corrs);
-            bits = dec2bin(idx_sym - 1, 2) - '0';
-            Dq = [Dq bits];
+        
+        % Precompute normalized reference waveforms once
+        ref_matrix = zeros(samples_per_bit, 4); % each column is a reference symbol
+        for k = 1:4
+            ref = cos(2*pi*f*t + qpsk_syms(k));
+            ref_matrix(:,k) = ref(:) / norm(ref);
         end
-        BER_Q(idx) = sum(Dq ~= b(1:length(Dq))) / length(Dq);
+        
+        % Reshape the received QPSK signal into columns
+        qpskn_matrix = reshape(qpskn, samples_per_bit, []); % samples_per_bit x num_symbols
+        
+        % Compute correlations (matrix multiplication)
+        corrs = ref_matrix' * qpskn_matrix; % 4 x num_symbols
+        
+        % Decide based on maximum correlation
+        [~, idx_syms] = max(corrs, [], 1); % indices of detected symbols
+        
+        % Map detected symbols back to bits
+        Dq = reshape(dec2bin(idx_syms - 1, 2).' - '0', 1, []); % (2 bits per symbol, column major order)
+        
+        % Calculate BER
+        BER_Q(idx) = mean(Dq ~= b(1:length(Dq)));
+
+        % snr_Q = ebno + 10*log10(2) - 10*log10(samples_per_bit);
+        % qpskn = awgn(qpsk, snr_Q, 'measured');
+        % Dq = [];
+        % for i = 1:samples_per_bit:length(qpskn)
+        %     segment = qpskn(i:i+samples_per_bit-1);
+        %     corrs = zeros(1,4);
+        %     for k = 1:4
+        %         ref = cos(2*pi*f*t + qpsk_syms(k));
+        %         corrs(k) = sum(segment .* (ref / norm(ref)));
+        %     end
+        %     [~, idx_sym] = max(corrs);
+        %     bits = dec2bin(idx_sym - 1, 2) - '0';
+        %     Dq = [Dq bits];
+        % end
+        % BER_Q(idx) = sum(Dq ~= b(1:length(Dq))) / length(Dq);
 
         %% FSK simulations (2-, 4-, 8-, 16-FSK)
         for M = [2, 4, 8, 16]
@@ -99,13 +138,13 @@ function test_total_modulationsandLora(msg_length)
             BER_val = sum(DcfM ~= bM) / length(bM);
             switch M
                 case 2
-                    BER_CF2(idx) = BER_val;
+                    BER_F2(idx) = BER_val;
                 case 4
-                    BER_CF4(idx) = BER_val;
+                    BER_F4(idx) = BER_val;
                 case 8
-                    BER_CF8(idx) = BER_val;
+                    BER_F8(idx) = BER_val;
                 case 16
-                    BER_CF16(idx) = BER_val;
+                    BER_F16(idx) = BER_val;
             end
         end
     end
@@ -176,10 +215,10 @@ function test_total_modulationsandLora(msg_length)
 
     %% Plot results
     figure;
-    semilogy(ebn0_range, BER_CF2, 'r-', ...
-             ebn0_range, BER_CF4, 'b-', ...
-             ebn0_range, BER_CF8, 'g-', ...
-             ebn0_range, BER_CF16, 'c-', ...
+    semilogy(ebn0_range, BER_F2, 'r-', ...
+             ebn0_range, BER_F4, 'b-', ...
+             ebn0_range, BER_F8, 'g-', ...
+             ebn0_range, BER_F16, 'c-', ...
              ebn0_range, BER_B, 'k--', ...
              ebn0_range, BER_Q, 'm--', ...
              ebn0_range, ber_matrix(1,:), 'o--', ...
@@ -196,3 +235,26 @@ function test_total_modulationsandLora(msg_length)
     title('BER vs. E_b/N_0 for Modulation Schemes');
     toc;
 end
+
+
+%% comments
+    % qpsk = [];
+    % for i = 1:2:n %group of bit in pairs
+    %     idx = b(i)*2 + b(i+1); 
+    %     phase = qpsk_syms(idx + 1); 
+    %     symbol = cos(2*pi*f*t + phase);
+    %     qpsk = [qpsk symbol / norm(symbol)];
+    % end
+
+        % bpsk = [];
+    % for i = 1:n
+    %     bpsk = [bpsk (b(i) == 1)*sp1 + (b(i) == 0)*sp0];
+    % end
+    
+            % D = [];
+        % for i = 1:samples_per_bit:length(bpskn)
+        %     segment = bpskn(i:i+samples_per_bit-1); %segments the received signal
+        %     bit = double(sum(segment .* sp1) > sum(segment .* sp0)); %correlates with the references sp0 and sp1
+        %     D = [D bit]; %decision of the bit
+        % end
+        % BER_B(idx) = sum(D ~= b) / n;
