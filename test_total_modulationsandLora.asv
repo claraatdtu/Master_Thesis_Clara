@@ -134,30 +134,29 @@ function test_total_modulationsandLora(msg_length)
         SF = SF_range(sf_idx);
         M = 2^SF;%number of chirps
         Ns = M;%samples per chirp
-        Rs = BW / M;%symbol rate
-        Rb = Rs * SF; %bit rate
+        Rs = BW / M;
+        Rb = Rs * SF;
 
-        num_symbols = floor(n / SF);  % number of LoRa symbols from bits
-        b_cut = b(1:num_symbols*SF); % keep necessary bits
-        b_matrix = reshape(b_cut, SF, []).';% reshape the bits: each row=symbol
-        %data_tx = bit2int(b_matrix);    
-        data_tx = bi2de(b_matrix, 'left-msb'); % each row= integer 0 to M-1 %REPLACE BY bit2int
+        num_symbols = floor(n / SF);         % number of LoRa symbols from bits
+        b_cut = b(1:num_symbols*SF); % pre-cut bits
+
+        b_matrix = reshape(b_cut, SF, []).';% Map the bits into symbols (vectorized)
+        data_tx = bi2de(b_matrix, 'left-msb'); % vector of integers [0, M-1] %REPLACE BY bit2int
     
-        t = (0:Ns-1)/fs; %time vector for 1 symbol
+        t = (0:Ns-1)/fs;
         Ts = 1/Rs;
         downchirp = exp(-1j*2*pi*((-BW/2)*t + (BW/(2*Ts))*t.^2));
-        base_chirp = exp(1j*2*pi*(BW/(2*Ts))*t.^2); % base chirp (phase common for all chirps)
+        base_chirp = exp(1j*2*pi*(BW/(2*Ts))*t.^2); % Precompute the base chirp (phase common for all chirps)
         f0_all = -BW/2 + (BW/M)*(0:M-1);% frequency steps
     
         for eb_idx = 1:length(EbN0_dB)
             EbN0 = EbN0_dB(eb_idx);
             chirps = base_chirp .* exp(1j*2*pi*f0_all.' * t); % all chirps: size: M x Ns
-            tx_lora_matrix = chirps(data_tx+1, :); % select the transmitted chirps based on data each row = one symbol
-            %tx_lora = reshape(tx_lora_matrix.', 1, []);
+            tx_lora_matrix = chirps(data_tx+1, :); % Select transmitted chirps based on data each row = one symbol
             tx_lora = tx_lora_matrix.'; 
             tx_lora = tx_lora(:).'; % flatten into row vector
     
-            Eb = sum(abs(tx_lora).^2) / (num_symbols * SF); %calculate energy per bit
+            Eb = sum(abs(tx_lora).^2) / (num_symbols * SF); 
             N0 = Eb / (10^(EbN0/10));
             noise = sqrt(N0/2) * (randn(1, length(tx_lora)) + 1j*randn(1, length(tx_lora)));% Add AWGN
             tx_lora_noisy = tx_lora + noise;
