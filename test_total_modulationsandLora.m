@@ -1,7 +1,7 @@
-function test_total_modulationsandLora(msg_length)
+function test_total_modulationsandLora(msg_bits_length)
 
     tic; %timer to see how long is the simulation
-    n = msg_length; %number of bits to simulate
+    n = msg_bits_length; %number of bits to simulate
     b = randi([0, 1], 1, n); %generate the binary message b
     samples_per_bit = 30; %how many samples in one bit => oversampling factor
     bitrate = 366.2; % Example bitrate (from LoRa study) => take the precise one

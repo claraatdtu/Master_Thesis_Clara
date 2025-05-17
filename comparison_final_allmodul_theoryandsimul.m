@@ -1,7 +1,7 @@
-function test_total_modulationsandLora(msg_length)
+function test_total_modulationsandLora(msg_bits_length)
 
     tic; %timer to see how long is the simulation
-    n = msg_length; %number of bits to simulate
+    n = msg_bits_length; %number of bits to simulate
     b = randi([0, 1], 1, n); %generate the binary message b
     samples_per_bit = 30; %how many samples in one bit => oversampling factor
     bitrate = 366.2; % Example bitrate (from LoRa study) => take the precise one
@@ -134,29 +134,30 @@ function test_total_modulationsandLora(msg_length)
         SF = SF_range(sf_idx);
         M = 2^SF;%number of chirps
         Ns = M;%samples per chirp
-        Rs = BW / M;
-        Rb = Rs * SF;
+        Rs = BW / M;%symbol rate
+        Rb = Rs * SF; %bit rate
 
-        num_symbols = floor(n / SF);         % number of LoRa symbols from bits
-        b_cut = b(1:num_symbols*SF); % pre-cut bits
-
-        b_matrix = reshape(b_cut, SF, []).';% Map the bits into symbols (vectorized)
-        data_tx = bi2de(b_matrix, 'left-msb'); % vector of integers [0, M-1] %REPLACE BY bit2int
+        num_symbols = floor(n / SF);  % number of LoRa symbols from bits
+        b_cut = b(1:num_symbols*SF); % keep necessary bits
+        b_matrix = reshape(b_cut, SF, []).';% reshape the bits: each row=symbol
+        %data_tx = bit2int(b_matrix);    
+        data_tx = bi2de(b_matrix, 'left-msb'); % each row= integer 0 to M-1 %REPLACE BY bit2int
     
-        t = (0:Ns-1)/fs;
+        t = (0:Ns-1)/fs; %time vector for 1 symbol
         Ts = 1/Rs;
         downchirp = exp(-1j*2*pi*((-BW/2)*t + (BW/(2*Ts))*t.^2));
-        base_chirp = exp(1j*2*pi*(BW/(2*Ts))*t.^2); % Precompute the base chirp (phase common for all chirps)
+        base_chirp = exp(1j*2*pi*(BW/(2*Ts))*t.^2); % base chirp (phase common for all chirps)
         f0_all = -BW/2 + (BW/M)*(0:M-1);% frequency steps
     
         for eb_idx = 1:length(EbN0_dB)
             EbN0 = EbN0_dB(eb_idx);
             chirps = base_chirp .* exp(1j*2*pi*f0_all.' * t); % all chirps: size: M x Ns
-            tx_lora_matrix = chirps(data_tx+1, :); % Select transmitted chirps based on data each row = one symbol
+            tx_lora_matrix = chirps(data_tx+1, :); % select the transmitted chirps based on data each row = one symbol
+            %tx_lora = reshape(tx_lora_matrix.', 1, []);
             tx_lora = tx_lora_matrix.'; 
             tx_lora = tx_lora(:).'; % flatten into row vector
     
-            Eb = sum(abs(tx_lora).^2) / (num_symbols * SF); 
+            Eb = sum(abs(tx_lora).^2) / (num_symbols * SF); %calculate energy per bit
             N0 = Eb / (10^(EbN0/10));
             noise = sqrt(N0/2) * (randn(1, length(tx_lora)) + 1j*randn(1, length(tx_lora)));% Add AWGN
             tx_lora_noisy = tx_lora + noise;
@@ -175,7 +176,46 @@ function test_total_modulationsandLora(msg_length)
             bit_errors = sum(rx_bits ~= b_cut);
             ber_matrix(sf_idx, eb_idx) = bit_errors / length(b_cut);
         end
-    end
+
+        function Pb = compute_Pb(EbN0_vec, M)
+            Pb = zeros(size(EbN0_vec));
+            for k = 1:length(EbN0_vec)
+                EbN0 = EbN0_vec(k);
+                Pb_k = 0;
+                for n = 1:M-1
+                    term = ((M / 2) / (M - 1)) * ((-1)^(n+1) / (n + 1)) * nchoosek(M - 1, n) * exp((-n * log2(M) * EbN0) / (n + 1)); %log2(M) because Es=m*Eb
+                    Pb_k = Pb_k + term;
+                end
+                Pb(k) = Pb_k;
+            end
+         end
+
+    %% Main script
+        target_Pb = 1e-5;
+        m_values = 1:5;
+        EbN0_dB_range = -5:1:15;
+        EbN0_lin_range = 10.^(EbN0_dB_range / 10);
+        EbN0_estimated = zeros(1, length(m_values));
+        
+        figure;
+        for idx = 1:length(m_values)
+            m = m_values(idx);
+            M = 2^m;
+            Pb_values = compute_Pb(EbN0_lin_range, M);
+            
+            % Estimate required Eb/N0 for target Pb
+            EbN0_estimated(idx) = interp1(Pb_values, EbN0_dB_range, target_Pb, 'linear', 'extrap');
+            
+            semilogy(EbN0_dB_range, Pb_values, 'DisplayName', sprintf('%d-FSK', M)); hold on;
+        end
+        
+        title('MFSK P_b as a function of E_b/N_0');
+        xlabel('E_b/N_0 (dB)');
+        ylabel('P_b (Average Bit Error Probability)');
+        legend show;
+        grid on;
+        ylim([1e-7, 1]);
+end
         
         
 
@@ -202,129 +242,4 @@ function test_total_modulationsandLora(msg_length)
     toc;
 end
 
-
-%% comments
- %num_symbols = msg_length;
-    % qpsk = [];
-    % for i = 1:2:n %group of bit in pairs
-    %     idx = b(i)*2 + b(i+1); 
-    %     phase = qpsk_syms(idx + 1); 
-    %     symbol = cos(2*pi*f*t + phase);
-    %     qpsk = [qpsk symbol / norm(symbol)];
-    % end
-
-        % bpsk = [];
-    % for i = 1:n
-    %     bpsk = [bpsk (b(i) == 1)*sp1 + (b(i) == 0)*sp0];
-    % end
-    
-            % D = [];
-        % for i = 1:samples_per_bit:length(bpskn)
-        %     segment = bpskn(i:i+samples_per_bit-1); %segments the received signal
-        %     bit = double(sum(segment .* sp1) > sum(segment .* sp0)); %correlates with the references sp0 and sp1
-        %     D = [D bit]; %decision of the bit
-        % end
-        % BER_B(idx) = sum(D ~= b) / n;
-
-
-
-
-        % snr_Q = ebno + 10*log10(2) - 10*log10(samples_per_bit);
-        % qpskn = awgn(qpsk, snr_Q, 'measured');
-        % Dq = [];
-        % for i = 1:samples_per_bit:length(qpskn)
-        %     segment = qpskn(i:i+samples_per_bit-1);
-        %     corrs = zeros(1,4);
-        %     for k = 1:4
-        %         ref = cos(2*pi*f*t + qpsk_syms(k));
-        %         corrs(k) = sum(segment .* (ref / norm(ref)));
-        %     end
-        %     [~, idx_sym] = max(corrs);
-        %     bits = dec2bin(idx_sym - 1, 2) - '0';
-        %     Dq = [Dq bits];
-        % end
-        % BER_Q(idx) = sum(Dq ~= b(1:length(Dq))) / length(Dq);
-
-
-            %         symM = cell(M,1);
-    %         fskM = [];
-    %         for k = 0:M-1 
-    %             fk = 1 + k;
-    %             symM{k+1} = sin(2*pi*fk*t) / norm(sin(2*pi*fk*t));
-    %         end
-    %         for i = 1:bits_per_sym:nb %map the bits into FSK symbols
-    %             idxM = bin2dec(num2str(bM(i:i+bits_per_sym-1)));
-    %             fskM = [fskM symM{idxM+1}];
-    %         end
-    %         ebno_adjustedM = ebno + 10*log10(bits_per_sym) - 10*log10(samples_per_bit); %noise
-    %         fsknM = awgn(fskM, ebno_adjustedM, 'measured'); %to make more efficient, variable changes size each op
-    %         DcfM = [];
-    %         for i = 1:samples_per_bit:length(fsknM) %detect with correlation
-    %             seg = fsknM(i:i+samples_per_bit-1);
-    %             corr = cellfun(@(x) sum(seg .* x), symM);
-    %             [~, id] = max(corr);
-    %             bits = dec2bin(id-1, bits_per_sym) - '0';
-    %             DcfM = [DcfM bits];
-    %         end
-    %         BER_val = sum(DcfM ~= bM) / length(bM); %calculate ber
-    %         switch M
-    %             case 2
-    %                 BER_F2(idx) = BER_val;
-    %             case 4
-    %                 BER_F4(idx) = BER_val;
-    %             case 8
-    %                 BER_F8(idx) = BER_val;
-    %             case 16
-    %                 BER_F16(idx) = BER_val;
-    %         end
-    %     end
-
-
-
-    %     data_tx = zeros(1, num_symbols);
-    %     for i = 1:num_symbols
-    %         bits_chunk = b((i-1)*SF + 1 : i*SF);
-    %         data_tx(i) = bin2dec(num2str(bits_chunk));
-    %     end
-    % 
-    %     t = (0:Ns-1)/fs;
-    %     Ts = 1/Rs;
-    %     downchirp = exp(-1j*2*pi*((-BW/2)*t + (BW/(2*Ts))*t.^2));
-    % 
-    %     for eb_idx = 1:length(EbN0_dB)
-    %         EbN0 = EbN0_dB(eb_idx);
-    %         tx_lora = [];
-    %         for i = 1:num_symbols
-    %             k = data_tx(i);
-    %             f0 = -BW/2 + k * (BW / M);
-    %             chirp = exp(1j*2*pi*(f0*t + (BW/(2*Ts))*t.^2));
-    %             tx_lora = [tx_lora chirp]; %not efficient, variable changes size each operation
-    %         end
-    %         Eb = sum(abs(tx_lora).^2) / (num_symbols * SF);
-    %         N0 = Eb / (10^(EbN0/10));
-    %         noise = sqrt(N0/2) * (randn(1, length(tx_lora)) + 1j * randn(1, length(tx_lora)));
-    %         tx_lora_noisy = tx_lora + noise;
-    % 
-    %         data_rx = zeros(1, num_symbols);
-    %         for i = 1:num_symbols
-    %             rx_symbol = tx_lora_noisy((i-1)*Ns+1 : i*Ns);
-    %             dechirped = rx_symbol .* downchirp;
-    %             fft_out = abs(fft(dechirped));
-    %             [~, k_hat] = max(fft_out);
-    %             data_rx(i) = mod(k_hat-1, M);
-    %         end
-    %         errors = sum(data_rx ~= data_tx);
-    %         % ber_matrix(sf_idx, eb_idx) = errors / (num_symbols * SF);
-    %         %ber_matrix(sf_idx, eb_idx) = (errors * SF) / (num_symbols * SF);  % same as errors / num_symbols
-    %         % Reconstruct bits from symbols
-    %         rx_bits = [];
-    %         for i = 1:num_symbols
-    %             rx_bits = [rx_bits dec2bin(data_rx(i), SF) - '0'];
-    %         end
-    %         orig_bits = b(1:num_symbols * SF);
-    %         bit_errors = sum(rx_bits ~= orig_bits);
-    %         ber_matrix(sf_idx, eb_idx) = bit_errors / length(orig_bits);
-    % 
-    % 
-    %     end
-    % end
+%% Vectorized!!!!!!!!!!!!!!!!!

@@ -17,7 +17,7 @@ end
 %% Main script
 target_Pb = 1e-5;
 m_values = 1:5;
-EbN0_dB_range = 0:0.1:20;
+EbN0_dB_range = -5:1:15;
 EbN0_lin_range = 10.^(EbN0_dB_range / 10);
 EbN0_estimated = zeros(1, length(m_values));
 
