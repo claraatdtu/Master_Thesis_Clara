@@ -2,7 +2,7 @@ clc; clear; close all;
 %%sensi compa p=0 to p=4
 %to keep
 %% assumptions: change of BW but rest fixed
-
+marker_list = {'o', 's', 'd', '^', 'v'};
 BW_LoRa = 125e3;
 % BW_FSK_1=12e3;
 % BW_FSK_2=1.2e3;
@@ -33,7 +33,7 @@ end
 
 %% Pb function EbN0
 
-EbN0_dB = -5:0.1:20;                   % Eb/N0 in dB
+EbN0_dB = -5:1:20;                   % Eb/N0 in dB
 EbN0_lin = 10.^(EbN0_dB / 10);         % Convert to linear scale
 
 % Compute Pb for BPSK and QPSK using the same formula
@@ -42,7 +42,7 @@ Pb_BPSK = 0.5 * erfc(sqrt(EbN0_lin));
 
 % Plot
 figure;
-semilogy(EbN0_dB, Pb_BPSK, 'b-', 'DisplayName', 'BPSK/QPSK');
+semilogy(EbN0_dB, Pb_BPSK, 'b-', 'DisplayName', 'BPSK/QPSK', 'LineWidth', 1.5,'Marker', 'o');
 % hold on;
 % semilogy(EbN0_dB, Pb_QPSK, 'r--', 'LineWidth', 2, 'DisplayName', 'QPSK');
 
@@ -55,7 +55,7 @@ ylim([1e-7 1]);
 xlim([-5 20]);
 
 %% sensitivity
-Pb_values = linspace(10e-10, 10.00e-6  , 3000000); 
+Pb_values = linspace(10e-10, 1.00e-3  , 30); 
 %k_values = 1:2; % k % bits per symbol, fixed to 12 for similar study
 p_values = 0:4; % parity bits
 
@@ -73,7 +73,7 @@ for idx = 1:length(p_values)
     %SNR_dB = 10 * log10(SNR_linear);
     Sensitivity_dBm = -174 + 10 * log10(bit_rate(1, p+1) * EbN0_linear) + NF;
     % Plot SNR vs. z
-    plot(Pb_values, Sensitivity_dBm, 'LineWidth', 1.5,'DisplayName', sprintf('BPSK and QPSK with conditions similar at LoRa, for p = %d', p));
+    plot(Pb_values, Sensitivity_dBm, 'LineWidth', 1.5,'DisplayName', sprintf('BPSK and QPSK with conditions similar at LoRa, for p = %d', p),  'Marker', marker_list{idx});
 
 % SNR vs. z
 end

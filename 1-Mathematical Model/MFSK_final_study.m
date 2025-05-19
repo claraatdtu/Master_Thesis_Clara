@@ -15,8 +15,9 @@ function Pb = compute_Pb(EbN0_vec, M)
 end
 
 %% Main script
-target_Pb = 1e-5;
+target_Pb = 1e-3;
 m_values = 1:5;
+marker_list = {'o', 's', 'd', '^', 'v'}; % the markers 
 EbN0_dB_range = -5:1:15;
 EbN0_lin_range = 10.^(EbN0_dB_range / 10);
 EbN0_estimated = zeros(1, length(m_values));
@@ -30,7 +31,7 @@ for idx = 1:length(m_values)
     % Estimate required Eb/N0 for target Pb
     EbN0_estimated(idx) = interp1(Pb_values, EbN0_dB_range, target_Pb, 'linear', 'extrap');
     
-    semilogy(EbN0_dB_range, Pb_values, 'DisplayName', sprintf('%d-FSK', M)); hold on;
+    semilogy(EbN0_dB_range, Pb_values, 'LineWidth', 1.5, 'Marker', marker_list{idx},'DisplayName', sprintf('%d-FSK', M)); hold on;
 end
 
 title('MFSK P_b as a function of E_b/N_0');
@@ -367,8 +368,6 @@ for idx2 = 1:length(m_values)
 end
 display(Rb)
 display(sensi)
-%%
-clc; clear; close all;
 
 %%
 clc; clear; close all;

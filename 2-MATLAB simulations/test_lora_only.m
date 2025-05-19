@@ -7,14 +7,15 @@ function test_lora_only(msg_bits_length) % LoRa BER Simulation
     % 1.0, 0.0, 1.0;   % magenta
     % 1.0, 1.0, 0.0;   % yellow
     % 0.0, 0.0, 0.0];  % black
-
+    marker_list = {'o', 's', 'd', '^', 'v', '>'}; % the markers for each SF
     tic; % start the timing
     n = msg_bits_length; % nb of bits to simulate
     b = randi([0, 1], 1, n); % random bit sequence
     bw = 125e3;  % LoRa bandwidth in Hz
     fs = bw;     % sampling frequency
-    EbN0_dB = -5:1:15; 
+    EbN0_dB = -5:0.5:15; 
     SF_range = 7:12;
+    colors = lines(length(SF_range));
     ber_matrix = zeros(length(SF_range), length(EbN0_dB)); % Rows = SF, Cols = Eb/N0
     for sf_idx = 1:length(SF_range)
         SF = SF_range(sf_idx);
@@ -71,24 +72,29 @@ function test_lora_only(msg_bits_length) % LoRa BER Simulation
             ber_matrix(sf_idx, eb_idx) = bit_errors / length(b_cut);
         end
     end
-    color_idx1=1;
+
     grid on; % plot Simulated BER
     for sf_idx = 1:length(SF_range)
-        semilogy(EbN0_dB, ber_matrix(sf_idx, :),  '--','DisplayName', ['Sim SF = ' num2str(SF_range(sf_idx))]); %,'Color', colors(color_idx1)
-        color_idx1=color_idx1+1;
+        %semilogy(EbN0_dB, ber_matrix(sf_idx, :), '--', 'LineWidth', 1.5,'DisplayName', ['Sim SF = ' num2str(SF_range(sf_idx))], 'Marker', marker_list{sf_idx},'MarkerIndices', 1:5:length(EbN0_dB)); %,'Color', colors(color_idx1)
+        semilogy(EbN0_dB, ber_matrix(sf_idx, :), 'LineStyle','--', 'LineWidth', 1.5,'DisplayName', ['Sim SF = ' num2str(SF_range(sf_idx))], 'Marker', marker_list{sf_idx}, 'Color', colors(sf_idx, :), 'MarkerIndices', 1:5:length(EbN0_dB));
         hold on;
     end
     cr=0;
     color_idx=1;
     EbN0 = 10.^(EbN0_dB / 10);% plot Theoretical P_b
+    marker_list = {'o', 's', 'd', '^', 'v', '>'}; % the markers for each SF
+    sf_idx2=1;
     for sf = SF_range
+
         term1= (log10(sf)/log10(12)) / (2);
         term2 = 4 / (4 + cr);
         %argument = term1 * term2 * EbN0;
         Pb = 0.5 * (erfc(2*term1 * term2 * EbN0));
         %Pb = 0.5 * erfc((1.28 * sqrt(sf * alpha) - 1.28 * sqrt(sf) + 0.4) / sqrt(2));
-        semilogy(EbN0_dB, Pb, 'DisplayName', ['Theory SF = ' num2str(sf)]); %,'Color', colors(color_idx)
-        color_idx=color_idx+1;
+        semilogy(EbN0_dB, Pb,'LineWidth', 1.5, 'DisplayName', ['Theory SF = ' num2str(sf)], 'Marker', marker_list{sf_idx2},'Color', colors(sf_idx2, :),  'MarkerIndices', 1:5:length(EbN0_dB));
+        %semilogy(EbN0_dB, Pb,  'LineWidth', 1.5,'DisplayName', ['Theory SF = ' num2str(sf)], 'Marker', marker_list{sf_idx},'MarkerIndices', 1:5:length(EbN0_dB)); %,'Color', colors(color_idx)
+        sf_idx2= sf_idx2 +1;
+
         hold on;
     end
     xlabel('E_b/N_0 [dB]');
@@ -96,7 +102,7 @@ function test_lora_only(msg_bits_length) % LoRa BER Simulation
     title('LoRa Simulated and Theoretical BER vs E_b/N_0 for different SF');
     legend('show');
     grid on;
-    ylim([1e-7, 1]);
+    ylim([1e-5, 1]);
 
     hold off;
     toc; % end timing
