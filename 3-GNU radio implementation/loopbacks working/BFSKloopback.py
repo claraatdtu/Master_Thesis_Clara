@@ -71,28 +71,24 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
         self.m = m = 1
         self.Rb = Rb = 400
         self.M = M = 2
+        self.sig_power = sig_power = 1
+        self.eb_n0_dB = eb_n0_dB = 15
         self.bw = bw = (2**m)*Rb/m
         self.bps = bps = int(math.log(M,2))
         self.Sps = Sps = 40
         self.samp_rate = samp_rate = Sps*Rb
+        self.packet_len = packet_len = 240
         self.num_samples = num_samples = 100000
+        self.noise_power = noise_power = ((sig_power*bw)/Rb)*10**(-eb_n0_dB/10)
         self.ndisp = ndisp = 2000
-        self.fsk_deviation = fsk_deviation = bw/2
+        self.fsk_deviation = fsk_deviation = bw
         self.center_freq = center_freq = 100000
         self.Rs = Rs = Rb/bps
-        self.Pn = Pn = 0
 
         ##################################################
         # Blocks
         ##################################################
 
-        self._Pn_range = qtgui.Range(0, 1, 1/100, 0, 200)
-        self._Pn_win = qtgui.RangeWidget(self._Pn_range, self.set_Pn, "Potentiel of the noise", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.top_grid_layout.addWidget(self._Pn_win, 2, 0, 1, 1)
-        for r in range(2, 3):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_time_sink_x_2_0 = qtgui.time_sink_f(
             (32*bps), #size
             samp_rate, #samp_rate
@@ -239,6 +235,42 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
 
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
+        self.qtgui_sink_x_0_0 = qtgui.sink_f(
+            1024, #fftsize
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            center_freq, #fc
+            (bw*8), #bw
+            'before noise', #name
+            True, #plotfreq
+            True, #plotwaterfall
+            True, #plottime
+            True, #plotconst
+            None # parent
+        )
+        self.qtgui_sink_x_0_0.set_update_time(1.0/10)
+        self._qtgui_sink_x_0_0_win = sip.wrapinstance(self.qtgui_sink_x_0_0.qwidget(), Qt.QWidget)
+
+        self.qtgui_sink_x_0_0.enable_rf_freq(True)
+
+        self.top_layout.addWidget(self._qtgui_sink_x_0_0_win)
+        self.qtgui_sink_x_0 = qtgui.sink_f(
+            1024, #fftsize
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            center_freq, #fc
+            (samp_rate*8), #bw
+            'after noise', #name
+            True, #plotfreq
+            True, #plotwaterfall
+            True, #plottime
+            True, #plotconst
+            None # parent
+        )
+        self.qtgui_sink_x_0.set_update_time(1.0/10)
+        self._qtgui_sink_x_0_win = sip.wrapinstance(self.qtgui_sink_x_0.qwidget(), Qt.QWidget)
+
+        self.qtgui_sink_x_0.enable_rf_freq(False)
+
+        self.top_layout.addWidget(self._qtgui_sink_x_0_win)
         self.qtgui_number_sink_0 = qtgui.number_sink(
             gr.sizeof_float,
             0,
@@ -274,14 +306,20 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
         self.top_layout.addWidget(self._qtgui_number_sink_0_win)
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_fcf(1, firdes.low_pass(1.0,samp_rate,900,300), center_freq, samp_rate)
         self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
+        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, 15, 200)
+        self._eb_n0_dB_win = qtgui.RangeWidget(self._eb_n0_dB_range, self.set_eb_n0_dB, "Eb/N0", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_grid_layout.addWidget(self._eb_n0_dB_win, 2, 0, 1, 1)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.top_grid_layout.setColumnStretch(c, 1)
         self.digital_clock_recovery_mm_xx_0_0 = digital.clock_recovery_mm_ff((Sps*(1+0.0)), 0.01, 0.5, 0.1, 0.05)
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
-        self.blocks_vector_source_x_0 = blocks.vector_source_b((1,0, 1, 0, 1, 0, 1, 0, 1,0 ,1,0,  1,0, 1,0), False, 1, [])
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_float*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_sub_xx_0 = blocks.sub_ff(1)
-        self.blocks_stream_mux_1 = blocks.stream_mux(gr.sizeof_char*1, [16,num_samples])
-        self.blocks_skiphead_0_0 = blocks.skiphead(gr.sizeof_char*1, 16)
-        self.blocks_skiphead_0 = blocks.skiphead(gr.sizeof_char*1, 16)
+        self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, packet_len, "packet_len")
+        self.blocks_skiphead_0_0 = blocks.skiphead(gr.sizeof_char*1, 0)
+        self.blocks_skiphead_0 = blocks.skiphead(gr.sizeof_char*1, 0)
         self.blocks_repeat_0_0 = blocks.repeat(gr.sizeof_char*1, Sps)
         self.blocks_repeat_0 = blocks.repeat(gr.sizeof_char*1, Sps)
         self.blocks_multiply_xx_0_0 = blocks.multiply_vff(1)
@@ -296,8 +334,8 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
         self.analog_sig_source_x_0_0 = analog.sig_source_f(samp_rate, analog.GR_COS_WAVE, (center_freq-fsk_deviation), 1, 0, 0)
         self.analog_sig_source_x_0 = analog.sig_source_f(samp_rate, analog.GR_COS_WAVE, (center_freq+fsk_deviation), 1, 0, 0)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 2, num_samples))), False)
-        self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf(10)
-        self.analog_noise_source_x_0 = analog.noise_source_f(analog.GR_GAUSSIAN, math.sqrt(Pn), 0)
+        self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf((samp_rate/(2*math.pi*fsk_deviation)))
+        self.analog_noise_source_x_0 = analog.noise_source_f(analog.GR_GAUSSIAN, (math.sqrt(2*noise_power)), 0)
         self.analog_const_source_x_0 = analog.sig_source_f(0, analog.GR_CONST_WAVE, 0, 0, 1)
 
 
@@ -307,11 +345,13 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
         self.connect((self.analog_const_source_x_0, 0), (self.blocks_sub_xx_0, 0))
         self.connect((self.analog_noise_source_x_0, 0), (self.blocks_add_xx_1, 0))
         self.connect((self.analog_quadrature_demod_cf_0, 0), (self.digital_clock_recovery_mm_xx_0_0, 0))
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_mux_1, 1))
+        self.connect((self.analog_random_source_x_0, 0), (self.blocks_delay_1_0_0_0, 0))
+        self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.analog_sig_source_x_0_0, 0), (self.blocks_multiply_xx_0_0, 1))
         self.connect((self.blocks_add_xx_0, 0), (self.blocks_throttle2_0, 0))
         self.connect((self.blocks_add_xx_1, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
+        self.connect((self.blocks_add_xx_1, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.blocks_char_to_float_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.blocks_char_to_float_0, 0), (self.blocks_sub_xx_0, 1))
         self.connect((self.blocks_char_to_float_0, 0), (self.qtgui_time_sink_x_0_2, 0))
@@ -327,11 +367,10 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_skiphead_0, 0), (self.fec_ber_bf_0, 0))
         self.connect((self.blocks_skiphead_0_0, 0), (self.blocks_char_to_float_0_0_1, 0))
         self.connect((self.blocks_skiphead_0_0, 0), (self.fec_ber_bf_0, 1))
-        self.connect((self.blocks_stream_mux_1, 0), (self.blocks_delay_1_0_0_0, 0))
-        self.connect((self.blocks_stream_mux_1, 0), (self.blocks_repeat_0, 0))
+        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.blocks_sub_xx_0, 0), (self.blocks_multiply_xx_0_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.blocks_add_xx_1, 1))
-        self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_stream_mux_1, 0))
+        self.connect((self.blocks_throttle2_0, 0), (self.qtgui_sink_x_0_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.blocks_repeat_0_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.blocks_skiphead_0_0, 0))
         self.connect((self.digital_clock_recovery_mm_xx_0_0, 0), (self.digital_binary_slicer_fb_0, 0))
@@ -361,6 +400,7 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
         self.Rb = Rb
         self.set_Rs(self.Rb/self.bps)
         self.set_bw((2**self.m)*self.Rb/self.m)
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
         self.set_samp_rate(self.Sps*self.Rb)
 
     def get_M(self):
@@ -370,12 +410,28 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
         self.M = M
         self.set_bps(int(math.log(self.M,2)))
 
+    def get_sig_power(self):
+        return self.sig_power
+
+    def set_sig_power(self, sig_power):
+        self.sig_power = sig_power
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
+
+    def get_eb_n0_dB(self):
+        return self.eb_n0_dB
+
+    def set_eb_n0_dB(self, eb_n0_dB):
+        self.eb_n0_dB = eb_n0_dB
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
+
     def get_bw(self):
         return self.bw
 
     def set_bw(self, bw):
         self.bw = bw
-        self.set_fsk_deviation(self.bw/2)
+        self.set_fsk_deviation(self.bw)
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
+        self.qtgui_sink_x_0_0.set_frequency_range(self.center_freq, (self.bw*8))
 
     def get_bps(self):
         return self.bps
@@ -399,19 +455,36 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.analog_quadrature_demod_cf_0.set_gain((self.samp_rate/(2*math.pi*self.fsk_deviation)))
         self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
         self.analog_sig_source_x_0_0.set_sampling_freq(self.samp_rate)
         self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
         self.freq_xlating_fir_filter_xxx_0.set_taps(firdes.low_pass(1.0,self.samp_rate,900,300))
+        self.qtgui_sink_x_0.set_frequency_range(self.center_freq, (self.samp_rate*8))
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0_2.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_2_0.set_samp_rate(self.samp_rate)
+
+    def get_packet_len(self):
+        return self.packet_len
+
+    def set_packet_len(self, packet_len):
+        self.packet_len = packet_len
+        self.blocks_stream_to_tagged_stream_0.set_packet_len(self.packet_len)
+        self.blocks_stream_to_tagged_stream_0.set_packet_len_pmt(self.packet_len)
 
     def get_num_samples(self):
         return self.num_samples
 
     def set_num_samples(self, num_samples):
         self.num_samples = num_samples
+
+    def get_noise_power(self):
+        return self.noise_power
+
+    def set_noise_power(self, noise_power):
+        self.noise_power = noise_power
+        self.analog_noise_source_x_0.set_amplitude((math.sqrt(2*self.noise_power)))
 
     def get_ndisp(self):
         return self.ndisp
@@ -424,6 +497,7 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
 
     def set_fsk_deviation(self, fsk_deviation):
         self.fsk_deviation = fsk_deviation
+        self.analog_quadrature_demod_cf_0.set_gain((self.samp_rate/(2*math.pi*self.fsk_deviation)))
         self.analog_sig_source_x_0.set_frequency((self.center_freq+self.fsk_deviation))
         self.analog_sig_source_x_0_0.set_frequency((self.center_freq-self.fsk_deviation))
 
@@ -435,19 +509,14 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
         self.analog_sig_source_x_0.set_frequency((self.center_freq+self.fsk_deviation))
         self.analog_sig_source_x_0_0.set_frequency((self.center_freq-self.fsk_deviation))
         self.freq_xlating_fir_filter_xxx_0.set_center_freq(self.center_freq)
+        self.qtgui_sink_x_0.set_frequency_range(self.center_freq, (self.samp_rate*8))
+        self.qtgui_sink_x_0_0.set_frequency_range(self.center_freq, (self.bw*8))
 
     def get_Rs(self):
         return self.Rs
 
     def set_Rs(self, Rs):
         self.Rs = Rs
-
-    def get_Pn(self):
-        return self.Pn
-
-    def set_Pn(self, Pn):
-        self.Pn = Pn
-        self.analog_noise_source_x_0.set_amplitude(math.sqrt(self.Pn))
 
 
 

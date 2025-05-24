@@ -73,28 +73,27 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.M = M = len(constellation )
         self.bps = bps = int(math.log(M,2))
         self.Rb = Rb = 400
+        self.m = m = 1
         self.Sps = Sps = 40
         self.Rs = Rs = Rb/bps
+        self.sig_power = sig_power = 1
         self.samp_rate = samp_rate = Rs*Sps
         self.ntaps = ntaps = 16*Sps
+        self.eb_n0_dB = eb_n0_dB = 15
+        self.bw = bw = (2**m)*Rb/m
         self.beta = beta = 1
+        self.packet_len = packet_len = 240
         self.num_samples = num_samples = 100000
+        self.noise_power = noise_power = ((sig_power*bw)/Rb)*10**(-eb_n0_dB/10)
         self.h = h = wform.rrcos(Sps,ntaps,beta)
         self.delay = delay = 16
-        self.Pn = Pn = 0
+        self.center_freq = center_freq = 100000
         self.Fmax = Fmax = samp_rate/2
 
         ##################################################
         # Blocks
         ##################################################
 
-        self._Pn_range = qtgui.Range(0, 1, 1/100, 0, 200)
-        self._Pn_win = qtgui.RangeWidget(self._Pn_range, self.set_Pn, "Potentiel of the noise", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.top_grid_layout.addWidget(self._Pn_win, 2, 0, 1, 1)
-        for r in range(2, 3):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_time_sink_x_2_0 = qtgui.time_sink_f(
             (32*bps), #size
             samp_rate, #samp_rate
@@ -143,6 +142,42 @@ class PSKloopback(gr.top_block, Qt.QWidget):
 
         self._qtgui_time_sink_x_2_0_win = sip.wrapinstance(self.qtgui_time_sink_x_2_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_2_0_win)
+        self.qtgui_sink_x_0_0 = qtgui.sink_c(
+            1024, #fftsize
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            center_freq, #fc
+            (bw*8), #bw
+            'before noise', #name
+            True, #plotfreq
+            True, #plotwaterfall
+            True, #plottime
+            True, #plotconst
+            None # parent
+        )
+        self.qtgui_sink_x_0_0.set_update_time(1.0/10)
+        self._qtgui_sink_x_0_0_win = sip.wrapinstance(self.qtgui_sink_x_0_0.qwidget(), Qt.QWidget)
+
+        self.qtgui_sink_x_0_0.enable_rf_freq(True)
+
+        self.top_layout.addWidget(self._qtgui_sink_x_0_0_win)
+        self.qtgui_sink_x_0 = qtgui.sink_c(
+            1024, #fftsize
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            center_freq, #fc
+            (samp_rate*8), #bw
+            'after noise', #name
+            True, #plotfreq
+            True, #plotwaterfall
+            True, #plottime
+            True, #plotconst
+            None # parent
+        )
+        self.qtgui_sink_x_0.set_update_time(1.0/10)
+        self._qtgui_sink_x_0_win = sip.wrapinstance(self.qtgui_sink_x_0.qwidget(), Qt.QWidget)
+
+        self.qtgui_sink_x_0.enable_rf_freq(False)
+
+        self.top_layout.addWidget(self._qtgui_sink_x_0_win)
         self.qtgui_number_sink_0 = qtgui.number_sink(
             gr.sizeof_float,
             0,
@@ -223,14 +258,20 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.interp_fir_filter_xxx_0 = filter.interp_fir_filter_ccf(Sps, h)
         self.interp_fir_filter_xxx_0.declare_sample_delay(0)
         self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
+        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, 15, 200)
+        self._eb_n0_dB_win = qtgui.RangeWidget(self._eb_n0_dB_range, self.set_eb_n0_dB, "Eb/N0", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_grid_layout.addWidget(self._eb_n0_dB_win, 2, 0, 1, 1)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.top_grid_layout.setColumnStretch(c, 1)
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(digital.constellation_bpsk().base())
         self.digital_clock_recovery_mm_xx_0_0 = digital.clock_recovery_mm_cc((Sps*(1+0.0)), 0.01, 0.5, 0.1, 0.05)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(constellation, 1)
-        self.blocks_vector_source_x_0 = blocks.vector_source_b((1,0, 1, 0, 1, 0, 1, 0, 1,0 ,1,0,  1,0, 1,0), False, 1, [])
         self.blocks_unpacked_to_packed_xx_0 = blocks.unpacked_to_packed_bb(bps, gr.GR_MSB_FIRST)
         self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(8)
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
-        self.blocks_stream_mux_1 = blocks.stream_mux(gr.sizeof_char*1, [16,num_samples])
+        self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, packet_len, "packet_len")
         self.blocks_skiphead_0_0 = blocks.skiphead(gr.sizeof_char*1, (16*bps))
         self.blocks_skiphead_0 = blocks.skiphead(gr.sizeof_char*1, (16*bps))
         self.blocks_packed_to_unpacked_xx_0 = blocks.packed_to_unpacked_bb(bps, gr.GR_MSB_FIRST)
@@ -241,7 +282,7 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.blocks_char_to_float_0_0_0 = blocks.char_to_float(1, 1)
         self.blocks_add_xx_0 = blocks.add_vcc(1)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 2, num_samples))), False)
-        self.analog_noise_source_x_0 = analog.noise_source_c(analog.GR_GAUSSIAN, math.sqrt(Pn), 0)
+        self.analog_noise_source_x_0 = analog.noise_source_c(analog.GR_GAUSSIAN, (math.sqrt(2*noise_power)), 0)
         self.analog_agc3_xx_0 = analog.agc3_cc((1e-3), (1e-4), 1.0, 1.0, 1, 65536)
 
 
@@ -250,9 +291,11 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.analog_agc3_xx_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.analog_noise_source_x_0, 0), (self.blocks_add_xx_0, 0))
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_mux_1, 1))
+        self.connect((self.analog_random_source_x_0, 0), (self.blocks_delay_1_0_0_0, 0))
+        self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.interp_fir_filter_xxx_0_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.qtgui_freq_sink_x_0, 0))
+        self.connect((self.blocks_add_xx_0, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.blocks_char_to_float_0_0_0, 0), (self.qtgui_time_sink_x_2_0, 1))
         self.connect((self.blocks_char_to_float_0_1, 0), (self.qtgui_time_sink_x_2_0, 0))
         self.connect((self.blocks_delay_1_0_0_0, 0), (self.blocks_skiphead_0_0, 0))
@@ -264,12 +307,11 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_skiphead_0, 0), (self.fec_ber_bf_0, 1))
         self.connect((self.blocks_skiphead_0_0, 0), (self.blocks_char_to_float_0_1, 0))
         self.connect((self.blocks_skiphead_0_0, 0), (self.fec_ber_bf_0, 0))
-        self.connect((self.blocks_stream_mux_1, 0), (self.blocks_delay_1_0_0_0, 0))
-        self.connect((self.blocks_stream_mux_1, 0), (self.blocks_pack_k_bits_bb_0, 0))
+        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.blocks_add_xx_0, 1))
+        self.connect((self.blocks_throttle2_0, 0), (self.qtgui_sink_x_0_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_skiphead_0, 0))
         self.connect((self.blocks_unpacked_to_packed_xx_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
-        self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_stream_mux_1, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.interp_fir_filter_xxx_0, 0))
         self.connect((self.digital_clock_recovery_mm_xx_0_0, 0), (self.analog_agc3_xx_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.blocks_unpacked_to_packed_xx_0, 0))
@@ -315,6 +357,15 @@ class PSKloopback(gr.top_block, Qt.QWidget):
     def set_Rb(self, Rb):
         self.Rb = Rb
         self.set_Rs(self.Rb/self.bps)
+        self.set_bw((2**self.m)*self.Rb/self.m)
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
+
+    def get_m(self):
+        return self.m
+
+    def set_m(self, m):
+        self.m = m
+        self.set_bw((2**self.m)*self.Rb/self.m)
 
     def get_Sps(self):
         return self.Sps
@@ -334,6 +385,13 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.Rs = Rs
         self.set_samp_rate(self.Rs*self.Sps)
 
+    def get_sig_power(self):
+        return self.sig_power
+
+    def set_sig_power(self, sig_power):
+        self.sig_power = sig_power
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
+
     def get_samp_rate(self):
         return self.samp_rate
 
@@ -342,6 +400,7 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.set_Fmax(self.samp_rate/2)
         self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
         self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate)
+        self.qtgui_sink_x_0.set_frequency_range(self.center_freq, (self.samp_rate*8))
         self.qtgui_time_sink_x_2_0.set_samp_rate(self.samp_rate)
 
     def get_ntaps(self):
@@ -351,6 +410,21 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.ntaps = ntaps
         self.set_h(wform.rrcos(self.Sps,self.ntaps,self.beta))
 
+    def get_eb_n0_dB(self):
+        return self.eb_n0_dB
+
+    def set_eb_n0_dB(self, eb_n0_dB):
+        self.eb_n0_dB = eb_n0_dB
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
+
+    def get_bw(self):
+        return self.bw
+
+    def set_bw(self, bw):
+        self.bw = bw
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
+        self.qtgui_sink_x_0_0.set_frequency_range(self.center_freq, (self.bw*8))
+
     def get_beta(self):
         return self.beta
 
@@ -358,11 +432,26 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.beta = beta
         self.set_h(wform.rrcos(self.Sps,self.ntaps,self.beta))
 
+    def get_packet_len(self):
+        return self.packet_len
+
+    def set_packet_len(self, packet_len):
+        self.packet_len = packet_len
+        self.blocks_stream_to_tagged_stream_0.set_packet_len(self.packet_len)
+        self.blocks_stream_to_tagged_stream_0.set_packet_len_pmt(self.packet_len)
+
     def get_num_samples(self):
         return self.num_samples
 
     def set_num_samples(self, num_samples):
         self.num_samples = num_samples
+
+    def get_noise_power(self):
+        return self.noise_power
+
+    def set_noise_power(self, noise_power):
+        self.noise_power = noise_power
+        self.analog_noise_source_x_0.set_amplitude((math.sqrt(2*self.noise_power)))
 
     def get_h(self):
         return self.h
@@ -379,12 +468,13 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.delay = delay
         self.blocks_delay_1_0_0_0.set_dly(int((self.delay*self.bps)))
 
-    def get_Pn(self):
-        return self.Pn
+    def get_center_freq(self):
+        return self.center_freq
 
-    def set_Pn(self, Pn):
-        self.Pn = Pn
-        self.analog_noise_source_x_0.set_amplitude(math.sqrt(self.Pn))
+    def set_center_freq(self, center_freq):
+        self.center_freq = center_freq
+        self.qtgui_sink_x_0.set_frequency_range(self.center_freq, (self.samp_rate*8))
+        self.qtgui_sink_x_0_0.set_frequency_range(self.center_freq, (self.bw*8))
 
     def get_Fmax(self):
         return self.Fmax

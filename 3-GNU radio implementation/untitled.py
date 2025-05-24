@@ -67,37 +67,32 @@ class untitled(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.sf = sf = 12
+        self.sf = sf = 7
         self.bw = bw = 125000
-        self.samp_rate = samp_rate = bw
-        self.packet_len = packet_len = 250
+        self.sig_power = sig_power = 1
+        self.packet_len = packet_len = 16*15
+        self.eb_n0_dB = eb_n0_dB = 10
         self.Rb = Rb = (sf*bw)/(2**sf)
         self.soft_decoding = soft_decoding = False
+        self.samp_rate = samp_rate = bw
         self.preamb_len = preamb_len = 8
-        self.pay_len = pay_len = 256*8
-        self.num_samples = num_samples = packet_len*400
+        self.pay_len = pay_len = packet_len
+        self.num_samples = num_samples = 100000
+        self.noise_power = noise_power = ((sig_power*bw)/Rb)*10**(-eb_n0_dB/10)
         self.ndisp = ndisp = 32
         self.impl_head = impl_head = False
         self.has_crc = has_crc = False
         self.cr = cr = 0
         self.clk_offset = clk_offset = 0
         self.center_freq = center_freq = 868100000
-        self.Sps = Sps = (samp_rate*sf)/Rb
+        self.Sps = Sps = 40
         self.Rs = Rs = Rb/sf
-        self.Pn = Pn = 0
         self.Idro = Idro = False
 
         ##################################################
         # Blocks
         ##################################################
 
-        self._Pn_range = qtgui.Range(0, 1, 1/100, 0, 200)
-        self._Pn_win = qtgui.RangeWidget(self._Pn_range, self.set_Pn, "Potentiel of the noise", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.top_grid_layout.addWidget(self._Pn_win, 2, 0, 1, 1)
-        for r in range(2, 3):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_time_sink_x_2_0 = qtgui.time_sink_f(
             ndisp, #size
             samp_rate, #samp_rate
@@ -198,6 +193,42 @@ class untitled(gr.top_block, Qt.QWidget):
 
         self._qtgui_time_sink_x_0_2_2_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_2_2_0_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_2_2_0_0_win)
+        self.qtgui_sink_x_0_0 = qtgui.sink_c(
+            1024, #fftsize
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            center_freq, #fc
+            (samp_rate*8), #bw
+            'before noise', #name
+            True, #plotfreq
+            True, #plotwaterfall
+            True, #plottime
+            True, #plotconst
+            None # parent
+        )
+        self.qtgui_sink_x_0_0.set_update_time(1.0/10)
+        self._qtgui_sink_x_0_0_win = sip.wrapinstance(self.qtgui_sink_x_0_0.qwidget(), Qt.QWidget)
+
+        self.qtgui_sink_x_0_0.enable_rf_freq(True)
+
+        self.top_layout.addWidget(self._qtgui_sink_x_0_0_win)
+        self.qtgui_sink_x_0 = qtgui.sink_c(
+            1024, #fftsize
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            center_freq, #fc
+            (samp_rate*8), #bw
+            'after noise', #name
+            True, #plotfreq
+            True, #plotwaterfall
+            True, #plottime
+            True, #plotconst
+            None # parent
+        )
+        self.qtgui_sink_x_0.set_update_time(1.0/10)
+        self._qtgui_sink_x_0_win = sip.wrapinstance(self.qtgui_sink_x_0.qwidget(), Qt.QWidget)
+
+        self.qtgui_sink_x_0.enable_rf_freq(False)
+
+        self.top_layout.addWidget(self._qtgui_sink_x_0_win)
         self.qtgui_number_sink_0 = qtgui.number_sink(
             gr.sizeof_float,
             0,
@@ -246,41 +277,58 @@ class untitled(gr.top_block, Qt.QWidget):
         self.lora_sdr_deinterleaver_0 = lora_sdr.deinterleaver( soft_decoding)
         self.lora_sdr_add_crc_0 = lora_sdr.add_crc(has_crc)
         self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
+        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, 10, 200)
+        self._eb_n0_dB_win = qtgui.RangeWidget(self._eb_n0_dB_range, self.set_eb_n0_dB, "Eb/N0", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_grid_layout.addWidget(self._eb_n0_dB_win, 2, 0, 1, 1)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.top_grid_layout.setColumnStretch(c, 1)
         self.blocks_throttle2_1 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
+        self.blocks_threshold_ff_0 = blocks.threshold_ff(0.5, 0.5, 0)
         self.blocks_stream_to_tagged_stream_2 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, packet_len, "packet_len")
         self.blocks_skiphead_0_0 = blocks.skiphead(gr.sizeof_char*1, 0)
         self.blocks_skiphead_0 = blocks.skiphead(gr.sizeof_char*1, 0)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(1)
+        self.blocks_float_to_char_0 = blocks.float_to_char(1, 1)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_gr_complex*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\SDR\\sdroutput', False)
+        self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, 0)
         self.blocks_char_to_float_0_1 = blocks.char_to_float(1, 1)
+        self.blocks_char_to_float_0_0_0_0 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0_0_0 = blocks.char_to_float(1, 1)
         self.blocks_add_xx_1 = blocks.add_vcc(1)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 2, num_samples))), False)
-        self.analog_noise_source_x_0 = analog.noise_source_c(analog.GR_GAUSSIAN, math.sqrt(Pn), 0)
+        self.analog_noise_source_x_0_0 = analog.noise_source_c(analog.GR_GAUSSIAN, (math.sqrt(2*noise_power)), 0)
 
 
         ##################################################
         # Connections
         ##################################################
         self.msg_connect((self.lora_sdr_header_decoder_0, 'frame_info'), (self.lora_sdr_frame_sync_0, 'frame_info'))
-        self.connect((self.analog_noise_source_x_0, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.analog_noise_source_x_0_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_skiphead_0_0, 0))
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_2, 0))
         self.connect((self.blocks_add_xx_1, 0), (self.lora_sdr_frame_sync_0, 0))
+        self.connect((self.blocks_add_xx_1, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.blocks_char_to_float_0_0_0, 0), (self.qtgui_time_sink_x_2_0, 1))
+        self.connect((self.blocks_char_to_float_0_0_0_0, 0), (self.blocks_threshold_ff_0, 0))
         self.connect((self.blocks_char_to_float_0_1, 0), (self.qtgui_time_sink_x_2_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.blocks_char_to_float_0_1, 0))
         self.connect((self.blocks_delay_0, 0), (self.fec_ber_bf_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_add_xx_1, 1))
+        self.connect((self.blocks_float_to_char_0, 0), (self.blocks_skiphead_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_add_xx_1, 0))
         self.connect((self.blocks_skiphead_0, 0), (self.blocks_char_to_float_0_0_0, 0))
         self.connect((self.blocks_skiphead_0, 0), (self.fec_ber_bf_0, 1))
         self.connect((self.blocks_skiphead_0_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_2, 0), (self.lora_sdr_whitening_0, 0))
-        self.connect((self.blocks_throttle2_1, 0), (self.blocks_add_xx_1, 0))
+        self.connect((self.blocks_threshold_ff_0, 0), (self.blocks_float_to_char_0, 0))
+        self.connect((self.blocks_throttle2_1, 0), (self.blocks_add_xx_1, 1))
+        self.connect((self.blocks_throttle2_1, 0), (self.qtgui_sink_x_0_0, 0))
         self.connect((self.fec_ber_bf_0, 0), (self.qtgui_number_sink_0, 0))
         self.connect((self.lora_sdr_add_crc_0, 0), (self.lora_sdr_hamming_enc_0, 0))
         self.connect((self.lora_sdr_deinterleaver_0, 0), (self.lora_sdr_hamming_dec_0, 0))
-        self.connect((self.lora_sdr_dewhitening_0, 0), (self.blocks_skiphead_0, 0))
+        self.connect((self.lora_sdr_dewhitening_0, 0), (self.blocks_char_to_float_0_0_0_0, 0))
         self.connect((self.lora_sdr_fft_demod_1, 0), (self.lora_sdr_gray_mapping_0, 0))
         self.connect((self.lora_sdr_frame_sync_0, 0), (self.lora_sdr_fft_demod_1, 0))
         self.connect((self.lora_sdr_gray_demap_0, 0), (self.lora_sdr_modulate_0, 0))
@@ -290,6 +338,7 @@ class untitled(gr.top_block, Qt.QWidget):
         self.connect((self.lora_sdr_header_0, 0), (self.lora_sdr_add_crc_0, 0))
         self.connect((self.lora_sdr_header_decoder_0, 0), (self.lora_sdr_dewhitening_0, 0))
         self.connect((self.lora_sdr_interleaver_0, 0), (self.lora_sdr_gray_demap_0, 0))
+        self.connect((self.lora_sdr_modulate_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.lora_sdr_modulate_0, 0), (self.blocks_throttle2_1, 0))
         self.connect((self.lora_sdr_modulate_0, 0), (self.qtgui_time_sink_x_0_2_2_0_0, 0))
         self.connect((self.lora_sdr_whitening_0, 0), (self.lora_sdr_header_0, 0))
@@ -310,7 +359,6 @@ class untitled(gr.top_block, Qt.QWidget):
         self.sf = sf
         self.set_Rb((self.sf*self.bw)/(2**self.sf))
         self.set_Rs(self.Rb/self.sf)
-        self.set_Sps((self.samp_rate*self.sf)/self.Rb)
         self.lora_sdr_gray_demap_0.set_sf(self.sf)
         self.lora_sdr_hamming_enc_0.set_sf(self.sf)
         self.lora_sdr_interleaver_0.set_sf(self.sf)
@@ -322,26 +370,31 @@ class untitled(gr.top_block, Qt.QWidget):
     def set_bw(self, bw):
         self.bw = bw
         self.set_Rb((self.sf*self.bw)/(2**self.sf))
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
         self.set_samp_rate(self.bw)
 
-    def get_samp_rate(self):
-        return self.samp_rate
+    def get_sig_power(self):
+        return self.sig_power
 
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.set_Sps((self.samp_rate*self.sf)/self.Rb)
-        self.blocks_throttle2_1.set_sample_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0_2_2_0_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_2_0.set_samp_rate(self.samp_rate)
+    def set_sig_power(self, sig_power):
+        self.sig_power = sig_power
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
 
     def get_packet_len(self):
         return self.packet_len
 
     def set_packet_len(self, packet_len):
         self.packet_len = packet_len
-        self.set_num_samples(self.packet_len*400)
+        self.set_pay_len(self.packet_len)
         self.blocks_stream_to_tagged_stream_2.set_packet_len(self.packet_len)
         self.blocks_stream_to_tagged_stream_2.set_packet_len_pmt(self.packet_len)
+
+    def get_eb_n0_dB(self):
+        return self.eb_n0_dB
+
+    def set_eb_n0_dB(self, eb_n0_dB):
+        self.eb_n0_dB = eb_n0_dB
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
 
     def get_Rb(self):
         return self.Rb
@@ -349,13 +402,24 @@ class untitled(gr.top_block, Qt.QWidget):
     def set_Rb(self, Rb):
         self.Rb = Rb
         self.set_Rs(self.Rb/self.sf)
-        self.set_Sps((self.samp_rate*self.sf)/self.Rb)
+        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
 
     def get_soft_decoding(self):
         return self.soft_decoding
 
     def set_soft_decoding(self, soft_decoding):
         self.soft_decoding = soft_decoding
+
+    def get_samp_rate(self):
+        return self.samp_rate
+
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.blocks_throttle2_1.set_sample_rate(self.samp_rate)
+        self.qtgui_sink_x_0.set_frequency_range(self.center_freq, (self.samp_rate*8))
+        self.qtgui_sink_x_0_0.set_frequency_range(self.center_freq, (self.samp_rate*8))
+        self.qtgui_time_sink_x_0_2_2_0_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_2_0.set_samp_rate(self.samp_rate)
 
     def get_preamb_len(self):
         return self.preamb_len
@@ -374,6 +438,13 @@ class untitled(gr.top_block, Qt.QWidget):
 
     def set_num_samples(self, num_samples):
         self.num_samples = num_samples
+
+    def get_noise_power(self):
+        return self.noise_power
+
+    def set_noise_power(self, noise_power):
+        self.noise_power = noise_power
+        self.analog_noise_source_x_0_0.set_amplitude((math.sqrt(2*self.noise_power)))
 
     def get_ndisp(self):
         return self.ndisp
@@ -413,6 +484,8 @@ class untitled(gr.top_block, Qt.QWidget):
 
     def set_center_freq(self, center_freq):
         self.center_freq = center_freq
+        self.qtgui_sink_x_0.set_frequency_range(self.center_freq, (self.samp_rate*8))
+        self.qtgui_sink_x_0_0.set_frequency_range(self.center_freq, (self.samp_rate*8))
 
     def get_Sps(self):
         return self.Sps
@@ -425,13 +498,6 @@ class untitled(gr.top_block, Qt.QWidget):
 
     def set_Rs(self, Rs):
         self.Rs = Rs
-
-    def get_Pn(self):
-        return self.Pn
-
-    def set_Pn(self, Pn):
-        self.Pn = Pn
-        self.analog_noise_source_x_0.set_amplitude(math.sqrt(self.Pn))
 
     def get_Idro(self):
         return self.Idro

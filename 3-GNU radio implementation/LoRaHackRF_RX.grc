@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: untitled
+    id: LoRaHackRF_RX
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,13 +22,13 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: loopback LoRa
+    title: LoRaHackRF_RX
     window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 28.0]
+    coordinate: [8, 8]
     rotation: 0
     state: enabled
 
@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1168, 28.0]
+    coordinate: [1168, 32.0]
     rotation: 0
     state: enabled
 - name: Pn
@@ -65,7 +65,7 @@ blocks:
     bus_structure: null
     coordinate: [1672, 24.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: Rb
   id: variable
   parameters:
@@ -75,7 +75,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 108.0]
+    coordinate: [432, 112.0]
     rotation: 0
     state: enabled
 - name: Rs
@@ -87,7 +87,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 108.0]
+    coordinate: [576, 112.0]
     rotation: 0
     state: enabled
 - name: Sps
@@ -99,7 +99,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 108.0]
+    coordinate: [720, 112.0]
     rotation: 0
     state: enabled
 - name: bw
@@ -111,7 +111,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [560, 28.0]
+    coordinate: [560, 32.0]
     rotation: 0
     state: enabled
 - name: center_freq
@@ -123,7 +123,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [680, 28.0]
+    coordinate: [680, 32.0]
     rotation: 0
     state: enabled
 - name: clk_offset
@@ -135,7 +135,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [952, 108.0]
+    coordinate: [952, 112.0]
     rotation: 0
     state: enabled
 - name: cr
@@ -147,7 +147,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [856, 108.0]
+    coordinate: [856, 112.0]
     rotation: 0
     state: enabled
 - name: has_crc
@@ -159,7 +159,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1048, 28.0]
+    coordinate: [1048, 32.0]
     rotation: 0
     state: enabled
 - name: impl_head
@@ -171,7 +171,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [920, 28.0]
+    coordinate: [920, 32.0]
     rotation: 0
     state: enabled
 - name: ndisp
@@ -183,7 +183,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1432, 28.0]
+    coordinate: [1432, 32.0]
     rotation: 0
     state: enabled
 - name: num_samples
@@ -195,7 +195,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1368, 108.0]
+    coordinate: [1368, 112.0]
     rotation: 0
     state: enabled
 - name: packet_len
@@ -207,7 +207,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1232, 108.0]
+    coordinate: [1232, 112.0]
     rotation: 0
     state: enabled
 - name: pay_len
@@ -219,7 +219,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1528, 108.0]
+    coordinate: [1528, 112.0]
     rotation: 0
     state: enabled
 - name: preamb_len
@@ -231,19 +231,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1288, 28.0]
+    coordinate: [1288, 32.0]
     rotation: 0
     state: enabled
 - name: samp_rate
   id: variable
   parameters:
     comment: ''
-    value: bw
+    value: bw*8
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 28.0]
+    coordinate: [432, 32.0]
     rotation: 0
     state: enabled
 - name: sf
@@ -255,7 +255,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [816, 28.0]
+    coordinate: [816, 32.0]
     rotation: 180
     state: enabled
 - name: soft_decoding
@@ -267,7 +267,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1072, 108.0]
+    coordinate: [1072, 112.0]
     rotation: 0
     state: enabled
 - name: analog_noise_source_x_0
@@ -288,7 +288,7 @@ blocks:
     bus_structure: null
     coordinate: [1992, 424.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: analog_random_source_x_0
   id: analog_random_source_x
   parameters:
@@ -306,9 +306,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 396.0]
+    coordinate: [56, 400.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_add_xx_1
   id: blocks_add_xx
   parameters:
@@ -324,9 +324,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2492.0, 512]
+    coordinate: [2496.0, 512]
     rotation: 270
-    state: enabled
+    state: disabled
 - name: blocks_char_to_float_0_0_0
   id: blocks_char_to_float
   parameters:
@@ -341,9 +341,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 1068.0]
+    coordinate: [704, 1072.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_char_to_float_0_1
   id: blocks_char_to_float
   parameters:
@@ -358,9 +358,26 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 988.0]
+    coordinate: [704, 992.0]
     rotation: 0
-    state: true
+    state: disabled
+- name: blocks_char_to_float_0_1_0
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [484.0, 696]
+    rotation: 270
+    state: enabled
 - name: blocks_delay_0
   id: blocks_delay
   parameters:
@@ -378,8 +395,26 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [496, 988.0]
+    coordinate: [496, 992.0]
     rotation: 0
+    state: disabled
+- name: blocks_file_sink_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: ''
+    type: byte
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [264.0, 936]
+    rotation: 270
     state: enabled
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
@@ -396,9 +431,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2256, 444.0]
+    coordinate: [2256, 448.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_skiphead_0
   id: blocks_skiphead
   parameters:
@@ -414,9 +449,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 1188.0]
+    coordinate: [440, 1184.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_skiphead_0_0
   id: blocks_skiphead
   parameters:
@@ -432,9 +467,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 988.0]
+    coordinate: [296, 992.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_stream_to_tagged_stream_2
   id: blocks_stream_to_tagged_stream
   parameters:
@@ -451,9 +486,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [320, 316.0]
+    coordinate: [320, 320.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_throttle2_1
   id: blocks_throttle2
   parameters:
@@ -472,9 +507,30 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2360, 316.0]
+    coordinate: [2360, 320.0]
     rotation: 0
-    state: enabled
+    state: disabled
+- name: blocks_throttle2_1_0
+  id: blocks_throttle2
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate/8
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2552, 492.0]
+    rotation: 180
+    state: disabled
 - name: epy_block_0
   id: epy_block
   parameters:
@@ -497,7 +553,7 @@ blocks:
     bus_structure: null
     coordinate: [984, 1184.0]
     rotation: 0
-    state: bypassed
+    state: disabled
 - name: fec_ber_bf_0
   id: fec_ber_bf
   parameters:
@@ -513,9 +569,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 1172.0]
+    coordinate: [736, 1168.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: import_0
   id: import
   parameters:
@@ -526,7 +582,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [240, 180.0]
+    coordinate: [240, 176.0]
     rotation: 0
     state: true
 - name: lora_sdr_add_crc_0
@@ -542,9 +598,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1224, 324.0]
+    coordinate: [1224, 320.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: lora_sdr_deinterleaver_0
   id: lora_sdr_deinterleaver
   parameters:
@@ -558,7 +614,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1416, 628.0]
+    coordinate: [1416, 624.0]
     rotation: 180
     state: enabled
 - name: lora_sdr_dewhitening_0
@@ -573,7 +629,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 624.0]
+    coordinate: [576, 624.0]
     rotation: 180
     state: enabled
 - name: lora_sdr_fft_demod_1
@@ -590,7 +646,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1944, 628.0]
+    coordinate: [1944, 624.0]
     rotation: 180
     state: enabled
 - name: lora_sdr_frame_sync_0
@@ -602,7 +658,7 @@ blocks:
     center_freq: int(center_freq)
     comment: ''
     impl_head: impl_head
-    maxoutbuf: '0'
+    maxoutbuf: '8192'
     minoutbuf: '0'
     os_factor: int(samp_rate/bw)
     preamb_len: preamb_len
@@ -613,7 +669,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2200, 588.0]
+    coordinate: [2224, 588.0]
     rotation: 180
     state: enabled
 - name: lora_sdr_gray_demap_0
@@ -629,9 +685,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1896, 324.0]
+    coordinate: [1896, 320.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: lora_sdr_gray_mapping_0
   id: lora_sdr_gray_mapping
   parameters:
@@ -645,7 +701,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1672, 628.0]
+    coordinate: [1672, 624.0]
     rotation: 180
     state: enabled
 - name: lora_sdr_hamming_dec_0
@@ -661,7 +717,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1136, 628.0]
+    coordinate: [1136, 624.0]
     rotation: 180
     state: enabled
 - name: lora_sdr_hamming_enc_0
@@ -678,9 +734,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1448, 316.0]
+    coordinate: [1448, 320.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: lora_sdr_header_0
   id: lora_sdr_header
   parameters:
@@ -698,7 +754,7 @@ blocks:
     bus_structure: null
     coordinate: [976, 304.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: lora_sdr_header_decoder_0
   id: lora_sdr_header_decoder
   parameters:
@@ -738,7 +794,7 @@ blocks:
     bus_structure: null
     coordinate: [1680, 304.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: lora_sdr_modulate_0
   id: lora_sdr_modulate
   parameters:
@@ -759,7 +815,7 @@ blocks:
     bus_structure: null
     coordinate: [2136, 304.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: lora_sdr_whitening_0
   id: lora_sdr_whitening
   parameters:
@@ -779,7 +835,7 @@ blocks:
     bus_structure: null
     coordinate: [648, 304.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: qtgui_number_sink_0
   id: qtgui_number_sink
   parameters:
@@ -840,9 +896,106 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1224, 1132.0]
+    coordinate: [1224, 1136.0]
     rotation: 0
-    state: true
+    state: disabled
+- name: qtgui_time_sink_x_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Rx bitstream"'
+    nconnections: '1'
+    size: '32'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1'
+    ymin: '-1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [452.0, 912]
+    rotation: 270
+    state: enabled
 - name: qtgui_time_sink_x_0_2_2_0_0
   id: qtgui_time_sink_x
   parameters:
@@ -937,9 +1090,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2336, 124.0]
+    coordinate: [2336, 128.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: qtgui_time_sink_x_2_0
   id: qtgui_time_sink_x
   parameters:
@@ -1034,9 +1187,32 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [960, 996.0]
+    coordinate: [960, 992.0]
     rotation: 0
-    state: true
+    state: disabled
+- name: soapy_hackrf_source_0
+  id: soapy_hackrf_source
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: 'False'
+    bandwidth: '0'
+    center_freq: center_freq
+    comment: ''
+    dev_args: ''
+    gain: '16'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fc32
+    vga: '16'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2800, 604.0]
+    rotation: 180
+    state: enabled
 - name: virtual_sink_0_0_0_1_0
   id: virtual_sink
   parameters:
@@ -1047,9 +1223,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [316.0, 512]
+    coordinate: [320.0, 512]
     rotation: 270
-    state: enabled
+    state: disabled
 - name: virtual_sink_0_0_0_1_0_0
   id: virtual_sink
   parameters:
@@ -1060,9 +1236,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [500.0, 720]
+    coordinate: [508.0, 720]
     rotation: 270
-    state: enabled
+    state: disabled
 - name: virtual_source_0_0_0_0_0_0
   id: virtual_source
   parameters:
@@ -1073,9 +1249,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [208, 1188.0]
+    coordinate: [208, 1184.0]
     rotation: 0
-    state: true
+    state: disabled
 
 connections:
 - [analog_noise_source_x_0, '0', blocks_multiply_const_vxx_0, '0']
@@ -1085,6 +1261,7 @@ connections:
 - [blocks_add_xx_1, '0', lora_sdr_frame_sync_0, '0']
 - [blocks_char_to_float_0_0_0, '0', qtgui_time_sink_x_2_0, '1']
 - [blocks_char_to_float_0_1, '0', qtgui_time_sink_x_2_0, '0']
+- [blocks_char_to_float_0_1_0, '0', qtgui_time_sink_x_0, '0']
 - [blocks_delay_0, '0', blocks_char_to_float_0_1, '0']
 - [blocks_delay_0, '0', fec_ber_bf_0, '0']
 - [blocks_multiply_const_vxx_0, '0', blocks_add_xx_1, '0']
@@ -1093,10 +1270,13 @@ connections:
 - [blocks_skiphead_0_0, '0', blocks_delay_0, '0']
 - [blocks_stream_to_tagged_stream_2, '0', lora_sdr_whitening_0, '0']
 - [blocks_throttle2_1, '0', blocks_add_xx_1, '1']
+- [blocks_throttle2_1_0, '0', lora_sdr_frame_sync_0, '0']
 - [epy_block_0, '0', qtgui_number_sink_0, '0']
 - [fec_ber_bf_0, '0', epy_block_0, '0']
 - [lora_sdr_add_crc_0, '0', lora_sdr_hamming_enc_0, '0']
 - [lora_sdr_deinterleaver_0, '0', lora_sdr_hamming_dec_0, '0']
+- [lora_sdr_dewhitening_0, '0', blocks_char_to_float_0_1_0, '0']
+- [lora_sdr_dewhitening_0, '0', blocks_file_sink_0, '0']
 - [lora_sdr_dewhitening_0, '0', virtual_sink_0_0_0_1_0_0, '0']
 - [lora_sdr_fft_demod_1, '0', lora_sdr_gray_mapping_0, '0']
 - [lora_sdr_frame_sync_0, '0', lora_sdr_fft_demod_1, '0']
@@ -1111,6 +1291,8 @@ connections:
 - [lora_sdr_modulate_0, '0', blocks_throttle2_1, '0']
 - [lora_sdr_modulate_0, '0', qtgui_time_sink_x_0_2_2_0_0, '0']
 - [lora_sdr_whitening_0, '0', lora_sdr_header_0, '0']
+- [soapy_hackrf_source_0, '0', blocks_throttle2_1_0, '0']
+- [soapy_hackrf_source_0, '0', lora_sdr_frame_sync_0, '0']
 - [virtual_source_0_0_0_0_0_0, '0', blocks_skiphead_0, '0']
 
 metadata:
