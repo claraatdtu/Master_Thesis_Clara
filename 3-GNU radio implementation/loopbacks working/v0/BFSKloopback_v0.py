@@ -81,7 +81,7 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
         self.num_samples = num_samples = 100000
         self.noise_power = noise_power = ((sig_power*bw)/Rb)*10**(-eb_n0_dB/10)
         self.ndisp = ndisp = 2000
-        self.fsk_deviation = fsk_deviation = bw/m
+        self.fsk_deviation = fsk_deviation = bw
         self.center_freq = center_freq = 100000
         self.Rs = Rs = Rb/bps
 
@@ -392,7 +392,6 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
     def set_m(self, m):
         self.m = m
         self.set_bw((2**self.m)*self.Rb/self.m)
-        self.set_fsk_deviation(self.bw/self.m)
 
     def get_Rb(self):
         return self.Rb
@@ -430,7 +429,7 @@ class BFSKloopback(gr.top_block, Qt.QWidget):
 
     def set_bw(self, bw):
         self.bw = bw
-        self.set_fsk_deviation(self.bw/self.m)
+        self.set_fsk_deviation(self.bw)
         self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
         self.qtgui_sink_x_0_0.set_frequency_range(self.center_freq, (self.bw*8))
 

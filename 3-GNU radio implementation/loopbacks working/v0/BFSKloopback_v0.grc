@@ -163,7 +163,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: bw/m
+    value: bw
   states:
     bus_sink: false
     bus_source: false

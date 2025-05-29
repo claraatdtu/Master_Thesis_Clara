@@ -1,0 +1,658 @@
+options:
+  parameters:
+    author: clsor
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: PSKTX
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: PSKTX
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: Fmax
+  id: variable
+  parameters:
+    comment: ''
+    value: samp_rate/2
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [640, 116.0]
+    rotation: 0
+    state: enabled
+- name: M
+  id: variable
+  parameters:
+    comment: ''
+    value: len(constellation )
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [464, 36.0]
+    rotation: 0
+    state: enabled
+- name: Rb
+  id: variable
+  parameters:
+    comment: ''
+    value: (sf_lora*bw_lora)/2**sf_lora
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [488, 116.0]
+    rotation: 0
+    state: enabled
+- name: Rs
+  id: variable
+  parameters:
+    comment: ''
+    value: Rb/bps
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1088, 116.0]
+    rotation: 0
+    state: enabled
+- name: Sps
+  id: variable
+  parameters:
+    comment: ''
+    value: '40'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [656, 36.0]
+    rotation: 0
+    state: enabled
+- name: beta
+  id: variable
+  parameters:
+    comment: ''
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 36.0]
+    rotation: 0
+    state: enabled
+- name: bps
+  id: variable
+  parameters:
+    comment: ''
+    value: int(math.log(M,2))
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [560, 36.0]
+    rotation: 0
+    state: enabled
+- name: bw
+  id: variable
+  parameters:
+    comment: ''
+    value: (2**m)*Rb/m
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1432, 36.0]
+    rotation: 0
+    state: enabled
+- name: bw_lora
+  id: variable
+  parameters:
+    comment: ''
+    value: '125000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1216, 36.0]
+    rotation: 0
+    state: enabled
+- name: center_freq
+  id: variable
+  parameters:
+    comment: ''
+    value: '100000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1528, 116.0]
+    rotation: 0
+    state: enabled
+- name: constellation
+  id: variable
+  parameters:
+    comment: ''
+    value: digital.constellation_qpsk().points()
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [968, 36.0]
+    rotation: 0
+    state: enabled
+- name: delay
+  id: variable
+  parameters:
+    comment: ''
+    value: '16'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [984, 116.0]
+    rotation: 0
+    state: enabled
+- name: eb_n0_dB
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: 2,0,1,1
+    label: Eb/N0
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '-5'
+    step: 1/100
+    stop: '15'
+    value: '15'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1720, 32.0]
+    rotation: 0
+    state: true
+- name: h
+  id: variable
+  parameters:
+    comment: ''
+    value: wform.rrcos(Sps,ntaps,beta)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [736, 116.0]
+    rotation: 0
+    state: enabled
+- name: m
+  id: variable
+  parameters:
+    comment: ''
+    value: int(math.log2(M))
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1336, 36.0]
+    rotation: 0
+    state: enabled
+- name: noise_power
+  id: variable
+  parameters:
+    comment: ''
+    value: (sig_power*bw/(Sps*Rs))*10**(-eb_n0_dB/10)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1368, 116.0]
+    rotation: 0
+    state: enabled
+- name: ntaps
+  id: variable
+  parameters:
+    comment: ''
+    value: 16*Sps
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [760, 36.0]
+    rotation: 0
+    state: enabled
+- name: num_samples
+  id: variable
+  parameters:
+    comment: ''
+    value: '100000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [312, 116.0]
+    rotation: 0
+    state: enabled
+- name: packet_len
+  id: variable
+  parameters:
+    comment: ''
+    value: '240'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1584, 36.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: Rs*Sps
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [312, 36.0]
+    rotation: 0
+    state: enabled
+- name: sf_lora
+  id: variable
+  parameters:
+    comment: ''
+    value: '7'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1112, 36.0]
+    rotation: 180
+    state: enabled
+- name: sig_power
+  id: variable
+  parameters:
+    comment: ''
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1240, 116.0]
+    rotation: 0
+    state: enabled
+- name: analog_noise_source_x_0
+  id: analog_noise_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: math.sqrt(2*noise_power)
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    noise_type: analog.GR_GAUSSIAN
+    seed: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1840, 568.0]
+    rotation: 0
+    state: true
+- name: analog_random_source_x_0
+  id: analog_random_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    max: '2'
+    maxoutbuf: '0'
+    min: '0'
+    minoutbuf: '0'
+    num_samps: num_samples
+    repeat: 'False'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [56, 428.0]
+    rotation: 0
+    state: true
+- name: blocks_add_xx_0
+  id: blocks_add_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2116.0, 664]
+    rotation: 270
+    state: true
+- name: blocks_file_sink_0_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU
+      radio implementation\SDR files of bits\PSKsdrinput
+    type: byte
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [80, 576.0]
+    rotation: 180
+    state: enabled
+- name: blocks_pack_k_bits_bb_0
+  id: blocks_pack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '8'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [664, 460.0]
+    rotation: 0
+    state: true
+- name: blocks_packed_to_unpacked_xx_0
+  id: blocks_packed_to_unpacked_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    bits_per_chunk: bps
+    comment: ''
+    endianness: gr.GR_MSB_FIRST
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_ports: '1'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 436.0]
+    rotation: 0
+    state: true
+- name: blocks_stream_to_tagged_stream_0
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    packet_len: packet_len
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [328, 436.0]
+    rotation: 0
+    state: enabled
+- name: blocks_throttle2_0
+  id: blocks_throttle2
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1856, 452.0]
+    rotation: 0
+    state: enabled
+- name: digital_chunks_to_symbols_xx_0
+  id: digital_chunks_to_symbols_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    dimension: '1'
+    in_type: byte
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_ports: '1'
+    out_type: complex
+    symbol_table: constellation
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1256, 452.0]
+    rotation: 0
+    state: true
+- name: import_0
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: import math
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [120, 188.0]
+    rotation: 0
+    state: true
+- name: interp_fir_filter_xxx_0
+  id: interp_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    interp: Sps
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_delay: '0'
+    taps: h
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1576, 452.0]
+    rotation: 0
+    state: true
+- name: qtgui_sink_x_0
+  id: qtgui_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    bw: samp_rate*8
+    comment: ''
+    fc: center_freq
+    fftsize: '1024'
+    gui_hint: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: after noise
+    plotconst: 'True'
+    plotfreq: 'True'
+    plottime: 'True'
+    plotwaterfall: 'True'
+    rate: '10'
+    showports: 'False'
+    showrf: 'False'
+    type: complex
+    wintype: window.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2240, 692.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_sink_x_0_0
+  id: qtgui_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    bw: bw*8
+    comment: ''
+    fc: center_freq
+    fftsize: '1024'
+    gui_hint: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: before noise
+    plotconst: 'True'
+    plotfreq: 'True'
+    plottime: 'True'
+    plotwaterfall: 'True'
+    rate: '10'
+    showports: 'False'
+    showrf: 'True'
+    type: complex
+    wintype: window.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2216, 420.0]
+    rotation: 0
+    state: enabled
+- name: soapy_hackrf_sink_0
+  id: soapy_hackrf_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: 'False'
+    bandwidth: bw
+    center_freq: center_freq
+    comment: ''
+    dev_args: driver=hackrf
+    samp_rate: samp_rate
+    type: fc32
+    vga: '16'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1784, 768.0]
+    rotation: 180
+    state: enabled
+- name: wform
+  id: epy_module
+  parameters:
+    alias: ''
+    comment: ''
+    source_code: "import math\nimport numpy\n#######################################################\n\
+      ##        Hecho por Homero Ortega Boada              ##\n##        comdiguis@saber.uis.edu.co\
+      \                 ##\n##     Universidad Industrial de Santander           ##\n\
+      #######################################################\n\n#######################################################\n\
+      ##               Forma rectangular                   ##\n#######################################################\
+      \                       \ndef rect(Sps):\n    return Sps*[1.,]\n\n#######################################################\n\
+      ##               Forma de Nyquist                    ##\n#######################################################\
+      \                       \ndef nyq(Sps,ntaps):\n    n=numpy.linspace(-int(ntaps/2),\
+      \ int(ntaps/2-1),ntaps)\n    h=numpy.sinc(n/Sps)\n#    return h/numpy.amax(h)\n\
+      \    return h\n#######################################################\n## \
+      \              Forma Coseno Alzado                 ##\n#######################################################\
+      \                       \ndef rcos(Sps,ntaps,beta):\n    if beta==0:\n     \
+      \   h=nyq(Sps,ntaps)\n    else:\n        h=ntaps*[0,]\n        for n in range(ntaps):\n\
+      \            k=n-ntaps/2. # esto es para que h[n] quede centrada en la mitad\
+      \ del vector\n            if abs(k)==Sps/(2.*beta):\n                h[n]=numpy.sinc(1./(2.*beta))*math.pi/4.\n\
+      \            else:\n                h[n]=numpy.sinc(k/Sps)*math.cos(beta*k*math.pi/Sps)/(1.-(2.*beta*k/Sps)**2)\
+      \                \n    Amp=numpy.amax(h)\n    return h/Amp\n#######################################################\n\
+      ##            Forma Raiz de Coseno Alzado            ##\n#######################################################\
+      \                       \n\ndef rrcos(Sps,ntaps,beta):\n    if beta==0:\n  \
+      \      h=nyq(Sps,ntaps)\n    else:\n        h=ntaps*[0,]\n        beta4=4.*beta\n\
+      \        for n in range(ntaps):\n            k=n-ntaps/2. # esto es para que\
+      \ h[n] quede centrada en la mitad del vector\n            if k==0:\n       \
+      \         h[n]=1+beta*(4./math.pi-1.)\n            elif abs(k)==Sps/beta4:\n\
+      \                ha=(1.+2./math.pi)*math.sin(math.pi/beta4)\n              \
+      \  hb=(1.-2./math.pi)*math.cos(math.pi/beta4)\n                h[n]=(ha+hb)*beta/math.sqrt(2.)\n\
+      \            else:\n                ks=k/Sps\n                kspi=math.pi*ks\n\
+      \                Num=math.sin(kspi*(1-beta))+beta4*ks*math.cos(kspi*(1+beta))\n\
+      \                Den=kspi*(1.-(beta4*ks)**2)\n                h[n]=Num/Den \
+      \               \n    Amp=numpy.amax(h)\n    return h/Amp\n########################################################\n\
+      ##     Bipolar non return to zero level signal        ##\n########################################################\n\
+      def B_NRZ_L(Sps):\n    return Sps*[1.,]\n\n########################################################\n\
+      ##  Forma sinc . Es la misma nyq() que aparece arriba ##\n########################################################\n\
+      def sinc(Sps,ntaps):\n    n=np.linspace(-int(ntaps/2), int(ntaps/2-1),ntaps)\n\
+      \    h=np.sinc(n/Sps)\n    return h\n########################################################\n\
+      ##              forma diente se sierra                ##\n########################################################\n\
+      def saw(Sps):\n    return np.linspace(0,Sps-1,Sps)\t\n########################################################\n\
+      #         Bipolar non return to zero signal           ##\n########################################################\n\
+      def RZ(Sps):\n    h=Sps*[1.,]\n    Sps_m=int(Sps/2)\n    h[Sps_m+1:Sps:1]=np.zeros(Sps-Sps_m)\n\
+      \    return h\n"
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [112, 252.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [analog_noise_source_x_0, '0', blocks_add_xx_0, '0']
+- [analog_random_source_x_0, '0', blocks_file_sink_0_0, '0']
+- [analog_random_source_x_0, '0', blocks_stream_to_tagged_stream_0, '0']
+- [blocks_add_xx_0, '0', qtgui_sink_x_0, '0']
+- [blocks_add_xx_0, '0', soapy_hackrf_sink_0, '0']
+- [blocks_pack_k_bits_bb_0, '0', blocks_packed_to_unpacked_xx_0, '0']
+- [blocks_packed_to_unpacked_xx_0, '0', digital_chunks_to_symbols_xx_0, '0']
+- [blocks_stream_to_tagged_stream_0, '0', blocks_pack_k_bits_bb_0, '0']
+- [blocks_throttle2_0, '0', blocks_add_xx_0, '1']
+- [blocks_throttle2_0, '0', qtgui_sink_x_0_0, '0']
+- [digital_chunks_to_symbols_xx_0, '0', interp_fir_filter_xxx_0, '0']
+- [interp_fir_filter_xxx_0, '0', blocks_throttle2_0, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.10.0
