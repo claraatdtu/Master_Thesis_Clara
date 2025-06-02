@@ -66,16 +66,18 @@ class BFSKTX(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
+        self.sf_lora = sf_lora = 7
+        self.bw_lora = bw_lora = 125000
         self.M = M = 2
+        self.samp_rate = samp_rate = 1000000
         self.m = m = int(math.log2(M))
         self.bps = bps = int(math.log(M,2))
-        self.Rb = Rb = 400
+        self.Rb = Rb = (sf_lora*bw_lora)/2**sf_lora
         self.sig_power = sig_power = 1
-        self.eb_n0_dB = eb_n0_dB = 5
+        self.eb_n0_dB = eb_n0_dB = 15
         self.bw = bw = (2**m)*Rb/m
-        self.Sps = Sps = 40
+        self.Sps = Sps = int((bps*samp_rate)/Rb)
         self.Rs = Rs = Rb/bps
-        self.samp_rate = samp_rate = (Sps*Rb)/bps
         self.packet_len = packet_len = 240
         self.num_samples = num_samples = 100000
         self.noise_power = noise_power = (sig_power*bw/(Sps*Rs))*10**(-eb_n0_dB/10)
@@ -215,7 +217,7 @@ class BFSKTX(gr.top_block, Qt.QWidget):
         self.qtgui_sink_x_0_0_0.enable_rf_freq(True)
 
         self.top_layout.addWidget(self._qtgui_sink_x_0_0_0_win)
-        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, 5, 200)
+        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, 15, 200)
         self._eb_n0_dB_win = qtgui.RangeWidget(self._eb_n0_dB_range, self.set_eb_n0_dB, "Eb/N0", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._eb_n0_dB_win, 2, 0, 1, 1)
         for r in range(2, 3):
@@ -265,6 +267,20 @@ class BFSKTX(gr.top_block, Qt.QWidget):
 
         event.accept()
 
+    def get_sf_lora(self):
+        return self.sf_lora
+
+    def set_sf_lora(self, sf_lora):
+        self.sf_lora = sf_lora
+        self.set_Rb((self.sf_lora*self.bw_lora)/2**self.sf_lora)
+
+    def get_bw_lora(self):
+        return self.bw_lora
+
+    def set_bw_lora(self, bw_lora):
+        self.bw_lora = bw_lora
+        self.set_Rb((self.sf_lora*self.bw_lora)/2**self.sf_lora)
+
     def get_M(self):
         return self.M
 
@@ -273,30 +289,42 @@ class BFSKTX(gr.top_block, Qt.QWidget):
         self.set_bps(int(math.log(self.M,2)))
         self.set_m(int(math.log2(self.M)))
 
+    def get_samp_rate(self):
+        return self.samp_rate
+
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.analog_frequency_modulator_fc_0.set_sensitivity(((2*math.pi*self.fsk_deviation)/self.samp_rate))
+        self.blocks_multiply_const_vxx_0_0.set_k(self.samp_rate/(2*math.pi*self.fsk_deviation))
+        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0_2_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_2_0_0_2_0.set_samp_rate(self.samp_rate)
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
+
     def get_m(self):
         return self.m
 
     def set_m(self, m):
         self.m = m
-        self.set_bw((2**self.m)*self.Rb/self.m)
         self.set_fsk_deviation(self.bw/self.m)
+        self.set_bw((2**self.m)*self.Rb/self.m)
 
     def get_bps(self):
         return self.bps
 
     def set_bps(self, bps):
         self.bps = bps
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
         self.set_Rs(self.Rb/self.bps)
-        self.set_samp_rate((self.Sps*self.Rb)/self.bps)
 
     def get_Rb(self):
         return self.Rb
 
     def set_Rb(self, Rb):
         self.Rb = Rb
-        self.set_Rs(self.Rb/self.bps)
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
         self.set_bw((2**self.m)*self.Rb/self.m)
-        self.set_samp_rate((self.Sps*self.Rb)/self.bps)
+        self.set_Rs(self.Rb/self.bps)
 
     def get_sig_power(self):
         return self.sig_power
@@ -317,20 +345,19 @@ class BFSKTX(gr.top_block, Qt.QWidget):
 
     def set_bw(self, bw):
         self.bw = bw
-        self.set_fsk_deviation(self.bw/self.m)
-        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
         self.qtgui_sink_x_0_0_0.set_frequency_range(self.center_freq, (self.bw*8))
         self.soapy_hackrf_sink_0.set_bandwidth(0, self.bw)
+        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
+        self.set_fsk_deviation(self.bw/self.m)
 
     def get_Sps(self):
         return self.Sps
 
     def set_Sps(self, Sps):
         self.Sps = Sps
-        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
-        self.set_samp_rate((self.Sps*self.Rb)/self.bps)
         self.blocks_repeat_0_0_0_0.set_interpolation(self.Sps)
         self.blocks_repeat_1.set_interpolation(self.Sps)
+        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
 
     def get_Rs(self):
         return self.Rs
@@ -338,17 +365,6 @@ class BFSKTX(gr.top_block, Qt.QWidget):
     def set_Rs(self, Rs):
         self.Rs = Rs
         self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
-
-    def get_samp_rate(self):
-        return self.samp_rate
-
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.analog_frequency_modulator_fc_0.set_sensitivity(((2*math.pi*self.fsk_deviation)/self.samp_rate))
-        self.blocks_multiply_const_vxx_0_0.set_k(self.samp_rate/(2*math.pi*self.fsk_deviation))
-        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0_2_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_2_0_0_2_0.set_samp_rate(self.samp_rate)
 
     def get_packet_len(self):
         return self.packet_len

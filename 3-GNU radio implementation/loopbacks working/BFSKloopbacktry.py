@@ -70,15 +70,15 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
         self.sf_lora = sf_lora = 7
         self.bw_lora = bw_lora = 125000
         self.M = M = 2
+        self.samp_rate = samp_rate = 1000000
         self.m = m = int(math.log2(M))
         self.bps = bps = int(math.log(M,2))
         self.Rb = Rb = (sf_lora*bw_lora)/2**sf_lora
         self.sig_power = sig_power = 1
         self.eb_n0_dB = eb_n0_dB = 15
         self.bw = bw = (2**m)*Rb/m
-        self.Sps = Sps = 40
+        self.Sps = Sps = int((bps*samp_rate)/Rb)
         self.Rs = Rs = Rb/bps
-        self.samp_rate = samp_rate = (Sps*Rb)/bps
         self.packet_len = packet_len = 240
         self.num_samples = num_samples = 100000
         self.noise_power = noise_power = (sig_power*bw/(Sps*Rs))*10**(-eb_n0_dB/10)
@@ -483,6 +483,22 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
         self.set_bps(int(math.log(self.M,2)))
         self.set_m(int(math.log2(self.M)))
 
+    def get_samp_rate(self):
+        return self.samp_rate
+
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
+        self.analog_frequency_modulator_fc_0.set_sensitivity(((2*math.pi*self.fsk_deviation)/self.samp_rate))
+        self.analog_quadrature_demod_cf_0_0.set_gain((self.samp_rate/(2*math.pi*self.fsk_deviation)))
+        self.blocks_multiply_const_vxx_0_0.set_k(self.samp_rate/(2*math.pi*self.fsk_deviation))
+        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0_2_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_2_0_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_2_0_0_2_0.set_samp_rate(self.samp_rate)
+
     def get_m(self):
         return self.m
 
@@ -497,7 +513,7 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
     def set_bps(self, bps):
         self.bps = bps
         self.set_Rs(self.Rb/self.bps)
-        self.set_samp_rate((self.Sps*self.Rb)/self.bps)
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
 
     def get_Rb(self):
         return self.Rb
@@ -505,8 +521,8 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
     def set_Rb(self, Rb):
         self.Rb = Rb
         self.set_Rs(self.Rb/self.bps)
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
         self.set_bw((2**self.m)*self.Rb/self.m)
-        self.set_samp_rate((self.Sps*self.Rb)/self.bps)
 
     def get_sig_power(self):
         return self.sig_power
@@ -537,7 +553,6 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
     def set_Sps(self, Sps):
         self.Sps = Sps
         self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
-        self.set_samp_rate((self.Sps*self.Rb)/self.bps)
         self.blocks_keep_one_in_n_0.set_n(self.Sps)
         self.blocks_repeat_0_0_0.set_interpolation(self.Sps)
         self.blocks_repeat_0_0_0_0.set_interpolation(self.Sps)
@@ -549,21 +564,6 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
     def set_Rs(self, Rs):
         self.Rs = Rs
         self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
-
-    def get_samp_rate(self):
-        return self.samp_rate
-
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.analog_frequency_modulator_fc_0.set_sensitivity(((2*math.pi*self.fsk_deviation)/self.samp_rate))
-        self.analog_quadrature_demod_cf_0_0.set_gain((self.samp_rate/(2*math.pi*self.fsk_deviation)))
-        self.blocks_multiply_const_vxx_0_0.set_k(self.samp_rate/(2*math.pi*self.fsk_deviation))
-        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0_2_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_2_0_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_2_0_0_2_0.set_samp_rate(self.samp_rate)
 
     def get_packet_len(self):
         return self.packet_len

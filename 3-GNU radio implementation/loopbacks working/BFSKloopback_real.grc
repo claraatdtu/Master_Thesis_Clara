@@ -73,7 +73,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '40'
+    value: int((bps*samp_rate)/Rb)
   states:
     bus_sink: false
     bus_source: false
@@ -226,7 +226,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: (Sps*Rb)/bps
+    value: '1000000'
   states:
     bus_sink: false
     bus_source: false
