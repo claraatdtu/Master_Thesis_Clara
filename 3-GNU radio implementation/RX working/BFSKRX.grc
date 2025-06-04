@@ -277,7 +277,7 @@ blocks:
     bus_structure: null
     coordinate: [2496, 308.0]
     rotation: 180
-    state: enabled
+    state: bypassed
 - name: analog_quadrature_demod_cf_0_0
   id: analog_quadrature_demod_cf
   parameters:
@@ -422,7 +422,7 @@ blocks:
     bus_structure: null
     coordinate: [2752, 332.0]
     rotation: 180
-    state: bypassed
+    state: disabled
 - name: blocks_unpack_k_bits_bb_1
   id: blocks_unpack_k_bits_bb
   parameters:
@@ -457,7 +457,7 @@ blocks:
     bus_structure: null
     coordinate: [864, 312.0]
     rotation: 180
-    state: enabled
+    state: bypassed
 - name: import_0
   id: import
   parameters:
@@ -940,16 +940,16 @@ blocks:
     affinity: ''
     alias: ''
     amp: 'False'
-    bandwidth: '0'
+    bandwidth: bw
     center_freq: center_freq
     comment: ''
-    dev_args: ''
-    gain: '16'
+    dev_args: driver=hackrf
+    gain: '8'
     maxoutbuf: '0'
     minoutbuf: '0'
     samp_rate: samp_rate
     type: fc32
-    vga: '16'
+    vga: '8'
   states:
     bus_sink: false
     bus_source: false
@@ -982,6 +982,7 @@ connections:
 - [rational_resampler_xxx_0, '0', blocks_keep_one_in_n_0, '0']
 - [rational_resampler_xxx_0, '0', qtgui_time_sink_x_0_1, '0']
 - [rational_resampler_xxx_0_0, '0', analog_pwr_squelch_xx_0, '0']
+- [soapy_hackrf_source_0, '0', analog_pwr_squelch_xx_0, '0']
 - [soapy_hackrf_source_0, '0', blocks_throttle2_1, '0']
 - [soapy_hackrf_source_0, '0', rational_resampler_xxx_0_0, '0']
 

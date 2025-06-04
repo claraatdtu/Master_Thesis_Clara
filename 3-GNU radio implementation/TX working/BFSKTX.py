@@ -69,7 +69,7 @@ class BFSKTX(gr.top_block, Qt.QWidget):
         self.sf_lora = sf_lora = 7
         self.bw_lora = bw_lora = 125000
         self.M = M = 2
-        self.samp_rate = samp_rate = 1000000
+        self.samp_rate = samp_rate = 2000000
         self.m = m = int(math.log2(M))
         self.bps = bps = int(math.log(M,2))
         self.Rb = Rb = (sf_lora*bw_lora)/2**sf_lora
@@ -82,7 +82,7 @@ class BFSKTX(gr.top_block, Qt.QWidget):
         self.num_samples = num_samples = 100000
         self.noise_power = noise_power = (sig_power*bw/(Sps*Rs))*10**(-eb_n0_dB/10)
         self.ndisp = ndisp = 2000
-        self.fsk_deviation = fsk_deviation = bw/m
+        self.fsk_deviation = fsk_deviation = Rb/2
         self.center_freq = center_freq = 100000
 
         ##################################################
@@ -97,7 +97,7 @@ class BFSKTX(gr.top_block, Qt.QWidget):
 
         self.soapy_hackrf_sink_0 = soapy.sink(dev, "fc32", 1, 'driver=hackrf',
                                   stream_args, tune_args, settings)
-        self.soapy_hackrf_sink_0.set_sample_rate(0, 1000000)
+        self.soapy_hackrf_sink_0.set_sample_rate(0, samp_rate)
         self.soapy_hackrf_sink_0.set_bandwidth(0, bw)
         self.soapy_hackrf_sink_0.set_frequency(0, center_freq)
         self.soapy_hackrf_sink_0.set_gain(0, 'AMP', False)
@@ -225,17 +225,19 @@ class BFSKTX(gr.top_block, Qt.QWidget):
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bf([0, 1], 1)
+        self.blocks_vector_source_x_0 = blocks.vector_source_b((1,1,1,0,0,0,0,1,0,1,0,1,1,0,1,0,1,1,1,0,1,0,0,0,1,0,0,1,0,0,1,1), True, 1, [])
         self.blocks_throttle2_0_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, packet_len, "packet_len")
+        self.blocks_stream_mux_0 = blocks.stream_mux(gr.sizeof_char*1, (32, num_samples))
         self.blocks_repeat_1 = blocks.repeat(gr.sizeof_float*1, Sps)
         self.blocks_repeat_0_0_0_0 = blocks.repeat(gr.sizeof_char*1, Sps)
         self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(m)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_cc(samp_rate/(2*math.pi*fsk_deviation))
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\sdrinput.bin', False, 0, 0)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\sdrinput', False, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
         self.blocks_char_to_float_0_2_0_0 = blocks.char_to_float(1, 1)
         self.blocks_add_xx_1_0 = blocks.add_vcc(1)
-        self.analog_noise_source_x_0_0 = analog.noise_source_c(analog.GR_GAUSSIAN, (math.sqrt(2*noise_power)), 0)
+        self.analog_noise_source_x_0_0_0 = analog.noise_source_c(analog.GR_GAUSSIAN, 0, 0)
         self.analog_frequency_modulator_fc_0 = analog.frequency_modulator_fc(((2*math.pi*fsk_deviation)/samp_rate))
 
 
@@ -243,18 +245,20 @@ class BFSKTX(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.connect((self.analog_frequency_modulator_fc_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
-        self.connect((self.analog_noise_source_x_0_0, 0), (self.blocks_add_xx_1_0, 0))
+        self.connect((self.analog_noise_source_x_0_0_0, 0), (self.blocks_add_xx_1_0, 0))
         self.connect((self.blocks_add_xx_1_0, 0), (self.soapy_hackrf_sink_0, 0))
         self.connect((self.blocks_char_to_float_0_2_0_0, 0), (self.qtgui_time_sink_x_0_2_0, 0))
         self.connect((self.blocks_file_source_0, 0), (self.blocks_repeat_0_0_0_0, 0))
-        self.connect((self.blocks_file_source_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_stream_mux_0, 1))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.blocks_throttle2_0_0, 0))
         self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
         self.connect((self.blocks_repeat_0_0_0_0, 0), (self.blocks_char_to_float_0_2_0_0, 0))
         self.connect((self.blocks_repeat_1, 0), (self.analog_frequency_modulator_fc_0, 0))
+        self.connect((self.blocks_stream_mux_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.blocks_throttle2_0_0, 0), (self.blocks_add_xx_1_0, 1))
         self.connect((self.blocks_throttle2_0_0, 0), (self.qtgui_sink_x_0_0_0, 0))
+        self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_stream_mux_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.blocks_repeat_1, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.qtgui_time_sink_x_2_0_0_2_0, 0))
 
@@ -294,19 +298,19 @@ class BFSKTX(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
         self.analog_frequency_modulator_fc_0.set_sensitivity(((2*math.pi*self.fsk_deviation)/self.samp_rate))
         self.blocks_multiply_const_vxx_0_0.set_k(self.samp_rate/(2*math.pi*self.fsk_deviation))
         self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
         self.qtgui_time_sink_x_0_2_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_2_0_0_2_0.set_samp_rate(self.samp_rate)
-        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
+        self.soapy_hackrf_sink_0.set_sample_rate(0, self.samp_rate)
 
     def get_m(self):
         return self.m
 
     def set_m(self, m):
         self.m = m
-        self.set_fsk_deviation(self.bw/self.m)
         self.set_bw((2**self.m)*self.Rb/self.m)
 
     def get_bps(self):
@@ -314,17 +318,18 @@ class BFSKTX(gr.top_block, Qt.QWidget):
 
     def set_bps(self, bps):
         self.bps = bps
-        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
         self.set_Rs(self.Rb/self.bps)
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
 
     def get_Rb(self):
         return self.Rb
 
     def set_Rb(self, Rb):
         self.Rb = Rb
+        self.set_Rs(self.Rb/self.bps)
         self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
         self.set_bw((2**self.m)*self.Rb/self.m)
-        self.set_Rs(self.Rb/self.bps)
+        self.set_fsk_deviation(self.Rb/2)
 
     def get_sig_power(self):
         return self.sig_power
@@ -345,19 +350,18 @@ class BFSKTX(gr.top_block, Qt.QWidget):
 
     def set_bw(self, bw):
         self.bw = bw
+        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
         self.qtgui_sink_x_0_0_0.set_frequency_range(self.center_freq, (self.bw*8))
         self.soapy_hackrf_sink_0.set_bandwidth(0, self.bw)
-        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
-        self.set_fsk_deviation(self.bw/self.m)
 
     def get_Sps(self):
         return self.Sps
 
     def set_Sps(self, Sps):
         self.Sps = Sps
+        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
         self.blocks_repeat_0_0_0_0.set_interpolation(self.Sps)
         self.blocks_repeat_1.set_interpolation(self.Sps)
-        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
 
     def get_Rs(self):
         return self.Rs
@@ -385,7 +389,6 @@ class BFSKTX(gr.top_block, Qt.QWidget):
 
     def set_noise_power(self, noise_power):
         self.noise_power = noise_power
-        self.analog_noise_source_x_0_0.set_amplitude((math.sqrt(2*self.noise_power)))
 
     def get_ndisp(self):
         return self.ndisp
