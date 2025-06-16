@@ -1,12 +1,12 @@
 %% GFSK sensitivity/spectrum efficiency study
 % AUTHOR: Clara SORRE
 % This MATLAB code analyzes the average bit error probability (P_b) for GFSK modulation 
-% using the defined analytical expression. It compares sensitivity and spectral efficiency 
+% using the defined expression. It compares sensitivity and spectral efficiency 
 % with LoRa CSS by matching the bit rate with different SF and parity settings.
 
 clc; clear; close all;
 
-%% GFSK bit rate = same of lora for comparing
+%% 1- GFSK bit rate = same of lora for comparing
 SF_values = 7:12; %or 7
 p_values = 0:4;
 BW_LoRa = 125e3;
@@ -23,11 +23,11 @@ for i = 1:length(SF_values)
     end
 end
 
-%% assumptions: change of BW but rest fixed
+%% 2- assumptions: change of BW but rest fixed
 NF= 6;
 h = 0.5; %usual modulation index
 
-%% GFSK FUNCTION
+%% 3- GFSK FUNCTION
 function Pb = compute_Pb(EbN0, h)
     alpha = EbN0;  % alpha
     a = sqrt(alpha / 2) .* sqrt(1 - sqrt(1 - (sin(2 * pi * h) ./ (2 * pi * h)).^2));% compute a and b
@@ -39,7 +39,7 @@ function Pb = compute_Pb(EbN0, h)
     end
 end
 
-%% use function iterations
+%% 4- use function iterations
 EbN0_dB = -5:15;  %SNR values in dB
 Pb_values = compute_Pb(10.^(EbN0_dB/10), h); %convert dB to linear
 semilogy(EbN0_dB, Pb_values,'DisplayName', sprintf('GFSK'), 'LineWidth', 1.5, 'Marker', 'o')

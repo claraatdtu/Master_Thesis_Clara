@@ -1,16 +1,17 @@
 %% PSK sensitivity/spectrum efficiency study
 % AUTHOR: Clara SORRE
-% This MATLAB code ..............
+%This MATLAB code analyzes the performance of PSK modulation defined in
+% the report, in terms of BER, sensitivity and spectral efficiency.
 clc; clear; close all;
 
-%% assumptions: change of BW but rest fixed
+%% 1- Assumptions: change of BW but rest fixed
 marker_list = {'o', 's', 'd', '^', 'v'};
 BW_LoRa = 125e3;
 % BW_FSK_1=12e3;
 % BW_FSK_2=1.2e3;
 NF= 6;
 
-%% PSK bit rate = same of lora for comparing
+%% 2- PSK bit rate = same of lora for comparing
 SF_values = 7:12;
 p_values = 0:4;
 % initialize 
@@ -26,7 +27,7 @@ for i = 1:length(SF_values)
     end
 end
 
-%% BPSK and QPSK P_b as a function of Eb/N0
+%% 3- BPSK and QPSK P_b as a function of Eb/N0
 EbN0_dB = -5:1:20; % Eb/N0 in dB
 EbN0_lin = 10.^(EbN0_dB / 10); % convert to linear scale
 Pb_BPSK = 0.5 * erfc(sqrt(EbN0_lin)); % compute Pb for BPSK and QPSK using the same formula
@@ -41,7 +42,7 @@ ylim([1e-7 1]);
 xlim([-5 20]);
 
 
-%% sensitivity plot: BPSK and QPSK with conditions similar at LoRa
+%% 4- sensitivity plot: BPSK and QPSK with conditions similar at LoRa
 Pb_values = linspace(10e-10, 1.00e-3  , 30); 
 p_values = 0:4; % parity bits
 SF_values = 7:12;
@@ -55,7 +56,7 @@ for i = 1:length(SF_values)%recreate the sensitivity of LoRa
         EbN0_linear =   ((z_primeprime).^2) / 2;%  linear scale
         Sensitivity_dBm = -174 + 10 * log10(bit_rate(i, 1) * EbN0_linear) + NF;
     end
-    plot(Pb_values, Sensitivity_dBm, 'LineWidth', 1.5,'DisplayName', sprintf('BPSK and QPSK with Bit rate equal to LoRa, for SF = %d', SF),  'Marker', marker_list{idx});
+    plot(Pb_values, Sensitivity_dBm, 'LineWidth', 1.5,'DisplayName', sprintf('BPSK and QPSK with Bit rate equal to LoRa, for SF = %d', SF),  'Marker', marker_list{j});
 end
 xlabel('P_{b}');
 ylabel('Sensitivity (dBm)');
@@ -64,7 +65,7 @@ grid on;
 legend show;
 hold off;
 
-%% SNR function of z' for different p for BPSK and QPSK (non plotted in the analysis)
+%% 5- SNR function of z' for different p for BPSK and QPSK (non plotted in the analysis)
 z_primeprime = linspace(0, 111, 1000); % start from 0
 p_values = 0:4; % parity bits
 k_values = 1:2; % bits per symbol
@@ -83,7 +84,7 @@ grid on;
 legend show;
 hold off;
 
-%% z' function of Pb (non plotted in the analysis)
+%% 6- z' function of Pb (non plotted in the analysis)
 Pb_values = linspace(0, 10e-6  , 1000000); 
 k_values = 1:2; % bits per symbol, fixed to 12 for similar study
 p_values = 0:4;
@@ -106,7 +107,7 @@ grid on;
 legend show;
 hold off;
 
-%% snr function of pb
+%% 7- snr function of pb
 Pb_values = linspace(0, 10e-6 , 1000000); 
 k_values = 1:2; % k % bits per symbol, fixed to 12 for similar study
 p_values = 0:4; % parity bits

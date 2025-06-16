@@ -34,14 +34,14 @@ print(f"\nTotal length at the input: {len(input_bits_list)} bits")
 
 ## READ THE OUTPUT DATA
 #path to the output file
-file_path = r"C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU radio implementation\SDR files of bits\BFSKsdroutput"
+file_path = r"C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU radio implementation\SDR files of bits\LoRasdroutputSNR15"
 
 with open(file_path, 'rb') as f:
     byte_data = f.read()
 
    # convert the bytes to bits
 try:
-    output_bits = ''.join(str(b) for b in byte_data)  # No need to format to 8 bits
+    output_bits = ''.join(f'{byte:08b}' for byte in byte_data)  # No need to format to 8 bits
 except ValueError:
     print("File contains unexpected byte values (not 0 or 1).")
 else:
@@ -50,34 +50,28 @@ else:
     print(f"\nTotal length at the output: {len(output_bits)} bits")
 
 
-## preamble reco
-preamble = '1010101010101010'
-positions = []
 
-start = 0
-while True:
-    index = output_bits.find(preamble, start)
-    if index == -1:
-        break
-    positions.append(index)
-    start = index + 1  # Move forward to find next occurrence
 
-print("Preamble found at indices:", positions)
-           #Preamble found at indices: [107199, 143127]
+## bit vector
+# Convert bitstring to list of integers
+output_bits_list = [int(bit) for bit in output_bits]
+
+print("Bits as list:")
+print(output_bits_list)
+print(f"\nTotal length at the output: {len(output_bits_list)} bits")
+
+
 ##
 L_output = []
 L_input = []
-for i in range (0,20):
-    L_output.append(int(output_bits[i+9262]))
+for i in range (0,98000):
+    L_output.append(int(output_bits_list[i]))
     L_input.append(int(input_bits_list[i]))
+
+
 print(L_input)
 print(L_output)
 
-
-print(L_input[2])
-print(L_output[2])
-
-## COMPARE INPUT AND OUTPUT FOR BER
 if L_input is not None and L_output is not None:
     #length for comparison: should be 100 000
     min_len = min(len(L_input), len(L_output))
@@ -94,3 +88,39 @@ if L_input is not None and L_output is not None:
 
 
 
+## COMPARE INPUT AND OUTPUT FOR BER
+if input_bits_list is not None and output_bits_list is not None:
+    #length for comparison: should be 100 000
+    min_len = min(len(input_bits_list), len(output_bits_list))
+    # compare the bits
+    errors = sum(1 for i in range(min_len) if input_bits_list[i] != output_bits_list[i])
+    ber = errors / (min_len) #if min_len > 0 else None
+
+    print("\nBER Computation") #ber results to display
+    print(f"Bit errors: {errors}")
+    if ber is not None:
+        print(f"BER: {ber:.6f}")
+    else:
+        print("BER issue of computation")
+
+
+print(min_len)
+
+
+
+
+
+## preamble reco
+preamble = '1010101010101010'
+positions = []
+
+start = 0
+while True:
+    index = output_bits.find(preamble, start)
+    if index == -1:
+        break
+    positions.append(index)
+    start = index + 1  # Move forward to find next occurrence
+
+print("Preamble found at indices:", positions)
+           #Preamble found at indices: [107199, 143127]

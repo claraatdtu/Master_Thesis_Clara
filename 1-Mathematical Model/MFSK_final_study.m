@@ -1,36 +1,36 @@
 %% MFSK sensitivity/spectrum efficiency study
 % AUTHOR: Clara SORRE
-% This MATLAB code analyzes .................. for MFSK modulation defined in the report.
-
+% This MATLAB code analyzes the performance of MFSK modulation defined in
+% the report, in terms of BER, sensitivity and spectral efficiency.
 clc; clear; close all;
 
 %% 1- compute Pb in function of EbN0: function reused in the following
 function Pb = compute_Pb(EbN0_vec, M)
-    Pb = zeros(size(EbN0_vec));
+    Pb = zeros(size(EbN0_vec)); %preallocate the vector
     for k = 1:length(EbN0_vec)
         EbN0 = EbN0_vec(k);
         Pb_k = 0;
         for n = 1:M-1
             term = ((M / 2) / (M - 1)) * ((-1)^(n+1) / (n + 1)) * nchoosek(M - 1, n) * exp((-n * log2(M) * EbN0) / (n + 1)); %log2(M) because Es=m*Eb
-            Pb_k = Pb_k + term;
+            Pb_k = Pb_k + term; %each term of the approximation formula
         end
         Pb(k) = Pb_k;
     end
 end
 
 %% 2- Main script: MFSK P_b as a function of E_b/N_0
-target_Pb = 1e-3;
-m_values = 1:5;
+target_Pb = 1e-3; %target ber
+m_values = 1:5; %this corresponds to M from 2 to 32
 marker_list = {'o', 's', 'd', '^', 'v'}; % the markers 
 EbN0_dB_range = -5:1:15;
-EbN0_lin_range = 10.^(EbN0_dB_range / 10);
+EbN0_lin_range = 10.^(EbN0_dB_range / 10); %converting to linear scale
 EbN0_estimated = zeros(1, length(m_values));
 figure;
 for idx = 1:length(m_values)
     m = m_values(idx);
     M = 2^m;
-    Pb_values = compute_Pb(EbN0_lin_range, M);
-    EbN0_estimated(idx) = interp1(Pb_values, EbN0_dB_range, target_Pb, 'linear', 'extrap'); % estimate required Eb/N0 for target Pb
+    Pb_values = compute_Pb(EbN0_lin_range, M); %interpolate to find the required Eb/N0 for the target ber
+    EbN0_estimated(idx) = interp1(Pb_values, EbN0_dB_range, target_Pb, 'linear', 'extrap'); 
     semilogy(EbN0_dB_range, Pb_values, 'LineWidth', 1.5, 'Marker', marker_list{idx},'DisplayName', sprintf('%d-FSK', M)); hold on;
 end
 title('MFSK P_b as a function of E_b/N_0');
@@ -58,7 +58,7 @@ disp(bit_rate);
 
 %% 4- Sensitivity fixed like LoRa CSS: Bit rate reachable and bandwidth needed for each modulation scheme at fixed Pb
 BW_LoRa=125e3;
-NF= 6;
+NF= 6; %the receiver noise figure in dB
 Pb_target = 1e-3; % target probability of bit error
 z = sqrt(2) * erfcinv(4 * Pb_target); % corresponding z value
 SF_values = 7:12;
@@ -200,7 +200,7 @@ for i = 1:size(BW_p0,1)
 end
 
 
-%% 6- BW fixed to 125e3 Hz
+%% 6- BW fixed to 125e3 Hz: compute achievable bit rate and sensi for fixed bw
 BW=125e3;
 m=0;
 NF= 6;
@@ -218,247 +218,54 @@ display(sensi)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%% OFDM-MFSK STUDY for sensitivity fixed like LoRa
-division = zeros(length(SF_values), length(p_values), length(m_values));
-subcarriers_needed = zeros(length(SF_values), length(p_values), length(m_values));
+%% 7- OFDM-MFSK STUDY for sensi fixed like LoRa
+% use bit rate from LoRa and bit rate obtained from MFSK study when
+% sensitivity fixed as lora
+% formula: N>= M* int(bit_rate_lora/bit_rate_mfsk)
 subcarriers_spacing = zeros(length(SF_values), length(p_values), length(m_values));
-bandwidth_needed= zeros(length(SF_values), length(p_values), length(m_values));
+bandwidth_needed_persub= zeros(length(SF_values), length(p_values), length(m_values));
 can_achieve_lora_bit_rate = false(length(SF_values), length(p_values), length(m_values));
 BW_used=zeros(length(SF_values), length(p_values), length(m_values));
-remaining_bw = zeros(length(SF_values), length(p_values), length(m_values));
-spec_eff_mfsk_improved= zeros(length(SF_values), length(p_values), length(m_values));
+subcarriers_needed=zeros(length(SF_values), length(p_values), length(m_values));
+g=0;
 for x1 = 1:length(m_values)
     m = m_values(x1);
     for x2 = 1:length(p_values)
         p = p_values(x2);
         for x3 = 1:length(SF_values)
             SF = SF_values(x3);
-            division(x3, x2, x1)=bit_rate(x3, x2)/Rb_table(x3, x2, x1);
-            subcarriers_needed(x3, x2, x1) = ceil(division(x3, x2, x1)*M);
-            subcarriers_spacing(x3, x2, x1) = BW_LoRa/subcarriers_needed(x3, x2, x1);
-            bandwidth_needed(x3, x2, x1)=(Rb_table(x3, x2, x1) *2^m)/m;
-            if subcarriers_spacing(x3, x2, x1)>=bandwidth_needed(x3, x2, x1)
-                can_achieve_lora_bit_rate(x3, x2, x1)= true;
-                if can_achieve_lora_bit_rate(x3, x2, x1) == true
-                    BW_used(x3, x2, x1)=subcarriers_needed(x3, x2, x1)*(Rb_table(x3, x2, x1) *2^m)/m;
-                    remaining_bw(x3, x2, x1)=BW_LoRa-BW_used(x3, x2, x1);
-                    spec_eff_mfsk_improved(x3, x2, x1)=Rb_table(x3, x2, x1)/BW_used(x3, x2, x1);
-                end
-
+            subcarriers_needed(x3, x2, x1)=(2^m)*ceil(bit_rate(x3, x2)/Rb_table(x3, x2, x1));
+            % 
+            % division(x3, x2, x1)=bit_rate(x3, x2)/Rb_table(x3, x2, x1);
+            %subcarriers_needed(x3, x2, x1) = ceil(division(x3, x2, x1)*M);
+            if subcarriers_needed(x3, x2, x1)==0
+                BW_used(x3, x2, x1)= BW_table(x3, x2, x1);
             end
 
+            if subcarriers_needed(x3, x2, x1) ~= 0
+                subcarriers_spacing(x3, x2, x1) = BW_LoRa/subcarriers_needed(x3, x2, x1);
+                bandwidth_needed_persub(x3, x2, x1)=(Rb_table(x3, x2, x1) *2^m)/m;
+                if subcarriers_spacing(x3, x2, x1)>=bandwidth_needed_persub(x3, x2, x1)
+                    can_achieve_lora_bit_rate(x3, x2, x1)= true;
+                    if can_achieve_lora_bit_rate(x3, x2, x1) == true
+                        BW_used(x3, x2, x1)=subcarriers_needed(x3, x2, x1)*bandwidth_needed_persub(x3, x2, x1);
+                        %remaining_bw(x3, x2, x1)=BW_LoRa-BW_used(x3, x2, x1);
+                        %spec_eff_mfsk_improved(x3, x2, x1)=Rb_table(x3, x2, x1)/BW_used(x3, x2, x1);
+                    else
+                        BW_used(x3, x2, x1)=subcarriers_needed(x3, x2, x1)*bandwidth_needed_persub(x3, x2, x1);
+                    end
+
+                else
+                    BW_used(x3, x2, x1)=subcarriers_needed(x3, x2, x1)*bandwidth_needed_persub(x3, x2, x1);
+                end    
+            
+            end
         
         end
 
     end
 end
-disp(spec_eff_mfsk_improved)
-%disp(division)
-%disp(subcarriers_needed)
-%disp(subcarriers_spacing)
-%disp(can_achieve_lora_bit_rate(:, 1, :))
-%disp(BW_used)
-%disp(remaining_bw(:, 1, :))
-% calculations 
 
-%% display data
-
-% Define your data
-SF_values = 7:12;
-MFSK_labels = {'BFSK','4-FSK','8-FSK','16-FSK','32-FSK'};
-
-% Extract and scale the data for parity = 0
-bw_data = squeeze(remaining_bw(:, 1, :)) / 1e3;  % size: 6 SF × 5 MFSK
-cmap = [ ...
-    0.2, 0.4, 0.8;  % Blue
-    0.4, 0.3, 0.9;  % Indigo
-    0.6, 0.2, 0.8;  % Purple
-    0.7, 0.3, 0.6;  % Plum
-    0.8, 0.4, 0.7]; % Violet
-
-% Plot grouped bar chart
-figure;
-b = bar(bw_data, 'grouped');
-for k = 1:length(b)
-    b(k).FaceColor = cmap(k, :);
-end
-set(gca, 'XTickLabel', SF_values);
-xlabel('Spreading Factor (SF)');
-ylabel('Remaining Bandwidth [kHz]');
-legend(MFSK_labels, 'Location', 'northwest');
-title('Remaining Bandwidth vs MFSK (Parity = 0)');
-grid on;
-% Add numeric labels on top of bars
-hold on;
-[rows, cols] = size(bw_data);
-for i = 1:cols
-    for j = 1:rows
-        x = j + (i - (cols+1)/2)*(0.8/cols); % x-offset for grouped bars
-        y = bw_data(j, i);
-        if y > 0
-            text(x, y + 3, sprintf('%.2f', y), 'HorizontalAlignment', 'center', 'FontSize', 8);
-        end
-    end
-end
-
-
-
-
-%% OFDM-MFSK STUDY for Rb fixed like LoRa
-%obtained sensitivity S and BW needed BW
-%use sensitivity formula!
-
-
-
-
-
-
-
-
-%% i think wrong:
-%% display heat map
-
-% Plotting heatmaps for Rb and BW
-% Setup
-SF_values = 7:12;
-m_values = [1 2 3 4 5]; % → 2^m = 2, 4, 8, 16, 32
-M_labels = {'2-FSK', '4-FSK', '8-FSK', '16-FSK', '32-FSK'};
-p_index = 1; % Parity bit = 0
-
-% Extract data for parity = 0
-Rb_fixedP = squeeze(Rb_table(:, p_index, :));   % [SF x MFSK]
-BW_fixedP = squeeze(BW_table(:, p_index, :)); % [SF x MFSK]
-
-% === Sensitivity Heatmap ===
-figure;
-imagesc(Rb_fixedP);
-colormap(flipud(hot)); % Better contrast for negative dBm values
-colorbar;
-title('Bit Rate achievable(bps) at Parity = 0');
-xlabel('Modulation');
-ylabel('Spreading Factor (SF)');
-xticks(1:length(M_labels));
-xticklabels(M_labels);
-yticks(1:length(SF_values));
-yticklabels(arrayfun(@(x) sprintf('SF%d', x), SF_values, 'UniformOutput', false));
-for i = 1:size(Rb_fixedP,1)
-    for j = 1:size(Rb_fixedP,2)
-        text(j, i, sprintf('%.1f', Rb_fixedP(i,j)), 'HorizontalAlignment', 'center', 'Color', 'k');
-    end
-end
-
-% === Bandwidth Heatmap ===
-figure;
-imagesc(BW_fixedP);
-colormap(parula);
-colorbar;
-title('Bandwidth needed (Hz) at Parity = 0');
-xlabel('Modulation');
-ylabel('Spreading Factor (SF)');
-xticks(1:length(M_labels));
-xticklabels(M_labels);
-yticks(1:length(SF_values));
-yticklabels(arrayfun(@(x) sprintf('SF%d', x), SF_values, 'UniformOutput', false));
-for i = 1:size(BW_fixedP,1)
-    for j = 1:size(BW_fixedP,2)
-        text(j, i, sprintf('%.0f', BW_fixedP(i,j)), 'HorizontalAlignment', 'center', 'Color', 'k');
-    end
-end
-
-
-
-
-%% Bit Rate AND BW fixed like LoRa SF12
-Rb=366; %bps
-BW =125e3;
-m=0;
-NF= 6;
-
-target_Pb = 1e-5;
-m_values = [1, 2, 3, 4, 5];
-EbN0_dB_range = -5:0.1:20;
-EbN0_lin_range = 10.^(EbN0_dB_range / 10);
-SNR_lin_range = EbN0_lin_range.*Rb/BW;
-SNR_dB_range = 10*log10(SNR_lin_range);
-
-EbN0= zeros(1, length(m_values));
-figure;
-for idx = 1:length(m_values)
-    m = m_values(idx);
-    M = 2^m;
-    Pb_values = compute_Pb(EbN0_lin_range, M);
-    
-    EbN0_estimated = interp1(Pb_values, EbN0_dB_range, target_Pb, 'linear', 'extrap');
-    sensi = -174 + NF + 10*log10(BW)+ SNR_dB_range;
-    semilogy(EbN0_dB_range, sensi, 'DisplayName', sprintf('%d-FSK', M)); hold on;
-
-    fprintf('For %d-FSK, the estimated Eb/N0 is %.2f dB \n', M, EbN0_estimated);
-end
-EbN0
-title('MFSK P_b as a function of Eb/N_0');
-xlabel('E_b/N_0 (dB)');
-ylabel('P_b (Average Bit Error Probability)');
-legend show;
-grid on;
-ylim([1e-7, 1]);
-
-%%
-Rb = 366; % bps
-BW = 125e3; % Hz
-NF = 6; % dB
-
-m_values = [1, 2, 3, 4, 5, 6]; % Corresponds to M = 2, 4, 8, 16, 32
-EbN0_dB_range = -5:0.1:20;
-EbN0_lin_range = 10.^(EbN0_dB_range / 10);
-
-
-
-for idx = 1:length(m_values)
-    m = m_values(idx);
-    M = 2^m;
-
-    % Compute BER (P_b) vs. Eb/N0
-    Pb_values = compute_Pb(EbN0_lin_range, M);
-
-    % Calculate SNR for each Eb/N0
-    SNR_lin = EbN0_lin_range * Rb / BW;
-    SNR_dB = 10*log10(SNR_lin);
-
-    % Calculate sensitivity (in dBm) for each point
-    sensitivity_dBm = -174 + 10*log10(BW) + NF + SNR_dB;
-
-    % Plot Sensitivity vs. BER (Pb)
-    plot(Pb_values, sensitivity_dBm, 'DisplayName', sprintf('%d-FSK', M), 'LineWidth', 1.5);
-    hold on;
-end
-
-grid on;
-xlabel('Bit Error Rate (P_b)');
-ylabel('Sensitivity (dBm)');
-title('Sensitivity vs. BER for different M-FSK modulations');
-legend show;
-xlim([0 1e-5]);
-ylim([-140 -120]);
-hold off;
-
+disp(BW_used)
+disp(subcarriers_needed)
 

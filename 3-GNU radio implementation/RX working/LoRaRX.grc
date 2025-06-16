@@ -69,18 +69,6 @@ blocks:
     coordinate: [592, 96.0]
     rotation: 0
     state: enabled
-- name: Sps
-  id: variable
-  parameters:
-    comment: ''
-    value: '40'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [736, 96.0]
-    rotation: 0
-    state: disabled
 - name: bw
   id: variable
   parameters:
@@ -129,27 +117,6 @@ blocks:
     coordinate: [872, 96.0]
     rotation: 0
     state: enabled
-- name: eb_n0_dB
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    gui_hint: 2,0,1,1
-    label: Eb/N0
-    min_len: '200'
-    orient: QtCore.Qt.Horizontal
-    rangeType: float
-    start: '-5'
-    step: 1/100
-    stop: '15'
-    value: '10'
-    widget: counter_slider
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1816, 16.0]
-    rotation: 0
-    state: true
 - name: has_crc
   id: variable
   parameters:
@@ -184,18 +151,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1448, 16.0]
-    rotation: 0
-    state: enabled
-- name: noise_power
-  id: variable
-  parameters:
-    comment: ''
-    value: ((sig_power*bw)/Rb)*10**(-eb_n0_dB/10)
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1664, 96.0]
     rotation: 0
     state: enabled
 - name: num_samples
@@ -294,6 +249,41 @@ blocks:
     coordinate: [1088, 96.0]
     rotation: 0
     state: enabled
+- name: blocks_add_const_vxx_0
+  id: blocks_add_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 644.0]
+    rotation: 0
+    state: disabled
+- name: blocks_char_to_float_0
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [232, 764.0]
+    rotation: 0
+    state: disabled
 - name: blocks_char_to_float_0_1_0
   id: blocks_char_to_float
   parameters:
@@ -308,11 +298,30 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 556.0]
-    rotation: 0
+    coordinate: [68.0, 472]
+    rotation: 270
     state: true
-- name: blocks_char_to_float_0_1_0_0
-  id: blocks_char_to_float
+- name: blocks_file_sink_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU
+      radio implementation\SDR files of bits\LoRasdroutputSNR-5
+    type: byte
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [768, 880.0]
+    rotation: 0
+    state: enabled
+- name: blocks_float_to_char_0
+  id: blocks_float_to_char
   parameters:
     affinity: ''
     alias: ''
@@ -325,26 +334,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 612.0]
-    rotation: 0
-    state: disabled
-- name: blocks_file_sink_0
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU
-      radio implementation\SDR files of bits\LoRasdroutputSNR15
-    type: byte
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [352, 752.0]
+    coordinate: [200, 900.0]
     rotation: 0
     state: enabled
 - name: blocks_pack_k_bits_bb_0
@@ -360,9 +350,42 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 668.0]
+    coordinate: [456, 900.0]
     rotation: 0
     state: enabled
+- name: blocks_threshold_ff_0
+  id: blocks_threshold_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    high: '0.6'
+    init: '0.4'
+    low: '0.2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [56.0, 784]
+    rotation: 270
+    state: disabled
+- name: digital_binary_slicer_fb_0
+  id: digital_binary_slicer_fb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [96.0, 776]
+    rotation: 270
+    state: disabled
 - name: import_0
   id: import
   parameters:
@@ -594,7 +617,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1592, 620.0]
+    coordinate: [1808, 580.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_1
@@ -691,7 +714,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 596.0]
+    coordinate: [736, 692.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_2
@@ -788,7 +811,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1952, 596.0]
+    coordinate: [2192, 516.0]
     rotation: 0
     state: enabled
 - name: soapy_hackrf_source_0
@@ -800,13 +823,13 @@ blocks:
     bandwidth: '0'
     center_freq: center_freq
     comment: ''
-    dev_args: ''
-    gain: '32'
+    dev_args: clock_source=external
+    gain: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
     samp_rate: '1000000'
     type: fc32
-    vga: '16'
+    vga: '32'
   states:
     bus_sink: false
     bus_source: false
@@ -816,13 +839,21 @@ blocks:
     state: enabled
 
 connections:
+- [blocks_add_const_vxx_0, '0', blocks_threshold_ff_0, '0']
+- [blocks_char_to_float_0, '0', qtgui_time_sink_x_0_1, '0']
+- [blocks_char_to_float_0_1_0, '0', blocks_add_const_vxx_0, '0']
+- [blocks_char_to_float_0_1_0, '0', blocks_float_to_char_0, '0']
+- [blocks_char_to_float_0_1_0, '0', digital_binary_slicer_fb_0, '0']
 - [blocks_char_to_float_0_1_0, '0', qtgui_time_sink_x_0_1, '0']
-- [blocks_char_to_float_0_1_0_0, '0', blocks_file_sink_0, '0']
+- [blocks_float_to_char_0, '0', blocks_pack_k_bits_bb_0, '0']
 - [blocks_pack_k_bits_bb_0, '0', blocks_file_sink_0, '0']
+- [blocks_threshold_ff_0, '0', blocks_char_to_float_0, '0']
+- [blocks_threshold_ff_0, '0', blocks_float_to_char_0, '0']
+- [blocks_threshold_ff_0, '0', qtgui_time_sink_x_0_1, '0']
+- [digital_binary_slicer_fb_0, '0', blocks_char_to_float_0, '0']
+- [digital_binary_slicer_fb_0, '0', blocks_pack_k_bits_bb_0, '0']
 - [lora_sdr_deinterleaver_0, '0', lora_sdr_hamming_dec_0, '0']
 - [lora_sdr_dewhitening_0, '0', blocks_char_to_float_0_1_0, '0']
-- [lora_sdr_dewhitening_0, '0', blocks_char_to_float_0_1_0_0, '0']
-- [lora_sdr_dewhitening_0, '0', blocks_pack_k_bits_bb_0, '0']
 - [lora_sdr_fft_demod_1, '0', lora_sdr_gray_mapping_0, '0']
 - [lora_sdr_frame_sync_0, '0', lora_sdr_fft_demod_1, '0']
 - [lora_sdr_frame_sync_0, '0', qtgui_time_sink_x_0, '0']

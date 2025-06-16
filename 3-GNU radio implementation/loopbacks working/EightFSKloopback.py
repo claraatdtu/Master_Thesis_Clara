@@ -15,7 +15,7 @@ from PyQt5 import QtCore
 from gnuradio import analog
 import math
 from gnuradio import blocks
-import numpy
+import pmt
 from gnuradio import digital
 from gnuradio import fec
 from gnuradio import gr
@@ -67,22 +67,24 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
+        self.sf_lora = sf_lora = 7
+        self.bw_lora = bw_lora = 125000
         self.M = M = 8
         self.m = m = int(math.log2(M))
-        self.bps = bps = int(math.log(M,2))
-        self.Rb = Rb = 400
-        self.sig_power = sig_power = 1
-        self.eb_n0_dB = eb_n0_dB = 15
+        self.Rb = Rb = (sf_lora*bw_lora)/2**sf_lora
+        self.samp_rate = samp_rate = 1000000
+        self.eb_n0_dB = eb_n0_dB = -5
         self.bw = bw = (2**m)*Rb/m
-        self.Sps = Sps = 40
-        self.Rs = Rs = Rb/bps
-        self.samp_rate = samp_rate = (Sps*Rb)/bps
+        self.bps = bps = int(math.log(M,2))
+        self.sig_power = sig_power = 1
         self.packet_len = packet_len = 240
-        self.num_samples = num_samples = 10000
-        self.noise_power = noise_power = (sig_power*bw/(Sps*Rs))*10**(-eb_n0_dB/10)
+        self.num_samples = num_samples = 100000
+        self.noise_power = noise_power = 1 / (2 * m* 10**(eb_n0_dB / 10))
         self.ndisp = ndisp = 2000
         self.fsk_deviation = fsk_deviation = bw/3
-        self.center_freq = center_freq = 100000
+        self.center_freq = center_freq = 868100000
+        self.Sps = Sps = int((bps*samp_rate)/Rb)
+        self.Rs = Rs = Rb/bps
 
         ##################################################
         # Blocks
@@ -285,7 +287,7 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
             1024, #size
             samp_rate, #samp_rate
-            "", #name
+            "after noise", #name
             1, #number of inputs
             None # parent
         )
@@ -382,7 +384,7 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
         self._qtgui_number_sink_0_0_win = sip.wrapinstance(self.qtgui_number_sink_0_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_number_sink_0_0_win)
         self.fec_ber_bf_0_0 = fec.ber_bf(False, 100, -7.0)
-        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, 15, 200)
+        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, -5, 200)
         self._eb_n0_dB_win = qtgui.RangeWidget(self._eb_n0_dB_range, self.set_eb_n0_dB, "Eb/N0", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._eb_n0_dB_win, 2, 0, 1, 1)
         for r in range(2, 3):
@@ -399,9 +401,13 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
         self.blocks_repeat_0_0_0_0 = blocks.repeat(gr.sizeof_char*1, Sps)
         self.blocks_repeat_0_0_0 = blocks.repeat(gr.sizeof_char*1, Sps)
         self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(m)
-        self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_cc(2.3873)
+        self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_cc(samp_rate/(2*math.pi*fsk_deviation))
         self.blocks_keep_one_in_n_0 = blocks.keep_one_in_n(gr.sizeof_float*1, Sps)
         self.blocks_float_to_uchar_0 = blocks.float_to_uchar(1, 1, 0)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\sdrinput', False, 0, 0)
+        self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\8FSKsdroutput-5', False)
+        self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_delay_1_0_0_0_0 = blocks.delay(gr.sizeof_char*1, 0)
         self.blocks_char_to_float_0_2_0_0 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0_2_0 = blocks.char_to_float(1, 1)
@@ -410,7 +416,6 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
         self.blocks_add_xx_1_0 = blocks.add_vcc(1)
         self.blocks_add_const_vxx_0_1_0 = blocks.add_const_ff(4)
         self.blocks_add_const_vxx_0_1 = blocks.add_const_ff(4)
-        self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 2, num_samples))), False)
         self.analog_quadrature_demod_cf_0_0 = analog.quadrature_demod_cf((samp_rate/(2*math.pi*fsk_deviation)))
         self.analog_noise_source_x_0_0 = analog.noise_source_c(analog.GR_GAUSSIAN, (math.sqrt(2*noise_power)), 0)
         self.analog_frequency_modulator_fc_0 = analog.frequency_modulator_fc(((2*math.pi*fsk_deviation)/samp_rate))
@@ -423,9 +428,6 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
         self.connect((self.analog_noise_source_x_0_0, 0), (self.blocks_add_xx_1_0, 0))
         self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.blocks_keep_one_in_n_0, 0))
         self.connect((self.analog_quadrature_demod_cf_0_0, 0), (self.qtgui_time_sink_x_0, 0))
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_delay_1_0_0_0_0, 0))
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_repeat_0_0_0_0, 0))
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_add_const_vxx_0_1, 0), (self.blocks_float_to_uchar_0, 0))
         self.connect((self.blocks_add_const_vxx_0_1_0, 0), (self.qtgui_time_sink_x_2_0_0_2_0, 0))
         self.connect((self.blocks_add_xx_1_0, 0), (self.analog_quadrature_demod_cf_0_0, 0))
@@ -434,6 +436,9 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_char_to_float_0_2_0, 0), (self.qtgui_time_sink_x_0_0, 0))
         self.connect((self.blocks_char_to_float_0_2_0_0, 0), (self.qtgui_time_sink_x_0_2_0, 0))
         self.connect((self.blocks_delay_1_0_0_0_0, 0), (self.blocks_skiphead_0_1, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_delay_1_0_0_0_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_repeat_0_0_0_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_unpack_k_bits_bb_1, 0))
         self.connect((self.blocks_keep_one_in_n_0, 0), (self.blocks_add_const_vxx_0_1, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.blocks_throttle2_0_0, 0))
@@ -448,6 +453,7 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.blocks_throttle2_0_0, 0), (self.blocks_add_xx_1_0, 1))
         self.connect((self.blocks_throttle2_0_0, 0), (self.qtgui_sink_x_0_0_0, 0))
+        self.connect((self.blocks_unpack_k_bits_bb_1, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_1, 0), (self.blocks_repeat_0_0_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_1, 0), (self.blocks_skiphead_0_0_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.blocks_add_const_vxx_0_1_0, 0))
@@ -463,6 +469,20 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
 
         event.accept()
 
+    def get_sf_lora(self):
+        return self.sf_lora
+
+    def set_sf_lora(self, sf_lora):
+        self.sf_lora = sf_lora
+        self.set_Rb((self.sf_lora*self.bw_lora)/2**self.sf_lora)
+
+    def get_bw_lora(self):
+        return self.bw_lora
+
+    def set_bw_lora(self, bw_lora):
+        self.bw_lora = bw_lora
+        self.set_Rb((self.sf_lora*self.bw_lora)/2**self.sf_lora)
+
     def get_M(self):
         return self.M
 
@@ -477,14 +497,7 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
     def set_m(self, m):
         self.m = m
         self.set_bw((2**self.m)*self.Rb/self.m)
-
-    def get_bps(self):
-        return self.bps
-
-    def set_bps(self, bps):
-        self.bps = bps
-        self.set_Rs(self.Rb/self.bps)
-        self.set_samp_rate((self.Sps*self.Rb)/self.bps)
+        self.set_noise_power(1 / (2 * self.m* 10**(self.eb_n0_dB / 10)))
 
     def get_Rb(self):
         return self.Rb
@@ -492,22 +505,31 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
     def set_Rb(self, Rb):
         self.Rb = Rb
         self.set_Rs(self.Rb/self.bps)
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
         self.set_bw((2**self.m)*self.Rb/self.m)
-        self.set_samp_rate((self.Sps*self.Rb)/self.bps)
 
-    def get_sig_power(self):
-        return self.sig_power
+    def get_samp_rate(self):
+        return self.samp_rate
 
-    def set_sig_power(self, sig_power):
-        self.sig_power = sig_power
-        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
+        self.analog_frequency_modulator_fc_0.set_sensitivity(((2*math.pi*self.fsk_deviation)/self.samp_rate))
+        self.analog_quadrature_demod_cf_0_0.set_gain((self.samp_rate/(2*math.pi*self.fsk_deviation)))
+        self.blocks_multiply_const_vxx_0_0.set_k(self.samp_rate/(2*math.pi*self.fsk_deviation))
+        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0_2_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_2_0_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_2_0_0_2_0.set_samp_rate(self.samp_rate)
 
     def get_eb_n0_dB(self):
         return self.eb_n0_dB
 
     def set_eb_n0_dB(self, eb_n0_dB):
         self.eb_n0_dB = eb_n0_dB
-        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
+        self.set_noise_power(1 / (2 * self.m* 10**(self.eb_n0_dB / 10)))
 
     def get_bw(self):
         return self.bw
@@ -515,41 +537,21 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
     def set_bw(self, bw):
         self.bw = bw
         self.set_fsk_deviation(self.bw/3)
-        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
         self.qtgui_sink_x_0_0_0.set_frequency_range(self.center_freq, (self.bw*8))
 
-    def get_Sps(self):
-        return self.Sps
+    def get_bps(self):
+        return self.bps
 
-    def set_Sps(self, Sps):
-        self.Sps = Sps
-        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
-        self.set_samp_rate((self.Sps*self.Rb)/self.bps)
-        self.blocks_keep_one_in_n_0.set_n(self.Sps)
-        self.blocks_repeat_0_0_0.set_interpolation(self.Sps)
-        self.blocks_repeat_0_0_0_0.set_interpolation(self.Sps)
-        self.blocks_repeat_1.set_interpolation(self.Sps)
+    def set_bps(self, bps):
+        self.bps = bps
+        self.set_Rs(self.Rb/self.bps)
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
 
-    def get_Rs(self):
-        return self.Rs
+    def get_sig_power(self):
+        return self.sig_power
 
-    def set_Rs(self, Rs):
-        self.Rs = Rs
-        self.set_noise_power((self.sig_power*self.bw/(self.Sps*self.Rs))*10**(-self.eb_n0_dB/10))
-
-    def get_samp_rate(self):
-        return self.samp_rate
-
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.analog_frequency_modulator_fc_0.set_sensitivity(((2*math.pi*self.fsk_deviation)/self.samp_rate))
-        self.analog_quadrature_demod_cf_0_0.set_gain((self.samp_rate/(2*math.pi*self.fsk_deviation)))
-        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0_2_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_2_0_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_2_0_0_2_0.set_samp_rate(self.samp_rate)
+    def set_sig_power(self, sig_power):
+        self.sig_power = sig_power
 
     def get_packet_len(self):
         return self.packet_len
@@ -585,6 +587,7 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
         self.fsk_deviation = fsk_deviation
         self.analog_frequency_modulator_fc_0.set_sensitivity(((2*math.pi*self.fsk_deviation)/self.samp_rate))
         self.analog_quadrature_demod_cf_0_0.set_gain((self.samp_rate/(2*math.pi*self.fsk_deviation)))
+        self.blocks_multiply_const_vxx_0_0.set_k(self.samp_rate/(2*math.pi*self.fsk_deviation))
 
     def get_center_freq(self):
         return self.center_freq
@@ -592,6 +595,22 @@ class EightFSKloopback(gr.top_block, Qt.QWidget):
     def set_center_freq(self, center_freq):
         self.center_freq = center_freq
         self.qtgui_sink_x_0_0_0.set_frequency_range(self.center_freq, (self.bw*8))
+
+    def get_Sps(self):
+        return self.Sps
+
+    def set_Sps(self, Sps):
+        self.Sps = Sps
+        self.blocks_keep_one_in_n_0.set_n(self.Sps)
+        self.blocks_repeat_0_0_0.set_interpolation(self.Sps)
+        self.blocks_repeat_0_0_0_0.set_interpolation(self.Sps)
+        self.blocks_repeat_1.set_interpolation(self.Sps)
+
+    def get_Rs(self):
+        return self.Rs
+
+    def set_Rs(self, Rs):
+        self.Rs = Rs
 
 
 

@@ -2,17 +2,17 @@
 % AUTHOR: Clara SORRE
 % This MATLAB code analyzes the bit error probability (P_b), the signal-to-noise ratio (SNR),
 % and the receiver sensitivity for LoRa using the Chirp Spread Spectrum (CSS) modulation defined in the report.
-% It evaluates the impact of spreading factor (SF) and coding rate (parity bits) on the performance.
+% It shows the impact of spreading factor (SF) and coding rate (parity bits) on the performance.
 
 clc; clear; close all;
 
-%% assumptions
+%% 1- assumptions
 BW=125e3;
 NF= 6;
 marker_list = {'o', 's', 'd', '^', 'v', '>'}; % the markers for each SF
 
 
-%% Q function plotted
+%% 2- Q function plotted
 x = -5:0.01:5; % define x for normal gaussian distribution
 pdf = (1/sqrt(2*pi)) * exp(-x.^2 / 2);
 z_vals = -5:0.01:5;% z values for Q-function
@@ -46,7 +46,7 @@ ylabel('Q(z)');
 title('Q-function');
 grid on;
 
-%% LoRa CSS P_b as a function of E_b/N_0
+%% 3- LoRa CSS P_b as a function of E_b/N_0
 EbN0_dB_range = -5:0.5:15;
 EbN0 = 10.^(EbN0_dB_range / 10);
 cr = 0;
@@ -71,7 +71,7 @@ hold
 
 
 
-%% SNR as a function of z for different SF values
+%% 4- SNR as a function of z for different SF values
 z_values = linspace(0, 111, 1000); % start from 0
 
 p = 0; % parity bits
@@ -97,7 +97,7 @@ legend show;
 hold off;
 
 
-%% SNR as a function of z for different p values
+%% 5- SNR as a function of z for different p values
 
 z_values = linspace(0, 111, 1000); % start from 0
 SF = 12; 
@@ -121,7 +121,7 @@ legend show;
 hold off;
 
 
-%% z function of Pb
+%% 6- z function of Pb
 
 Pb_values = linspace(10e-100, 10e-6 , 1000000); %Pb range
 z_values = sqrt(2) * erfcinv(2 * Pb_values); % compute z from Pb
@@ -133,7 +133,7 @@ title('z as a function of P_b');
 grid on;
 
 
-%% SNR_{dB} as a function of P_{b} for different SF values
+%% 7- SNR_{dB} as a function of P_{b} for different SF values
 
 Pb_values = linspace(0, 10e-3, 1000); 
 z_values = sqrt(2) * erfcinv(2* Pb_values); % compute z from Pb
@@ -157,7 +157,7 @@ grid on;
 legend show;
 hold off;
 
-%% SNR_{dB} as a function of P_{b} for different p values 
+%% 8- SNR_{dB} as a function of P_{b} for different p values 
 Pb_values = linspace(0, 10e-3, 1000); 
 z_values = sqrt(2) * erfcinv(2* Pb_values);%compute z from Pb
 SF = 12; % parity bits
@@ -180,7 +180,7 @@ legend show;
 hold off;
 
 
-%% Sensitivity_{dB} as a function of P_{b} for different SF values
+%% 9- Sensitivity_{dB} as a function of P_{b} for different SF values
 Pb_values = linspace(10e-10, 10e-4  , 1000);  
 z_values = sqrt(2) * erfcinv(2 * Pb_values);% compute z from Pb
 p = 0; % parity bits
@@ -204,7 +204,7 @@ grid on;
 legend show;
 hold off;
 
-%% Sensitivity_{dB} as a function of P_{b} for p that varies
+%% 10- Sensitivity_{dB} as a function of P_{b} for p that varies
 Pb_values = linspace(10e-10, 10e-4, 1000); % probability of bit error
 z_values = sqrt(2) * erfcinv(2 * Pb_values);
 SF = 12; % fixed Spreading Factor
@@ -228,7 +228,7 @@ legend show;
 hold off;
 
 
-%% Final Sensitivity Table: sensitivity (dBm) for each (SF, p) at fixed Pb
+%% 11- Final Sensitivity Table: sensitivity (dBm) for each (SF, p) at fixed Pb
 BW=125e3;
 NF= 6;
 Pb_target = 1e-3; % target probability of bit error

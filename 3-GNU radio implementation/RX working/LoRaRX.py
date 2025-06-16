@@ -11,7 +11,6 @@
 
 from PyQt5 import Qt
 from gnuradio import qtgui
-from PyQt5 import QtCore
 from gnuradio import blocks
 from gnuradio import gr
 from gnuradio.filter import firdes
@@ -66,16 +65,14 @@ class LoRaRX(gr.top_block, Qt.QWidget):
         ##################################################
         self.sf = sf = 7
         self.bw = bw = 125000
-        self.sig_power = sig_power = 1
         self.packet_len = packet_len = 250
-        self.eb_n0_dB = eb_n0_dB = 10
         self.Rb = Rb = (sf*bw)/(2**sf)
         self.soft_decoding = soft_decoding = False
+        self.sig_power = sig_power = 1
         self.samp_rate = samp_rate = 1000000
         self.preamb_len = preamb_len = 8
         self.pay_len = pay_len = packet_len
         self.num_samples = num_samples = 100000
-        self.noise_power = noise_power = ((sig_power*bw)/Rb)*10**(-eb_n0_dB/10)
         self.ndisp = ndisp = 2000
         self.impl_head = impl_head = False
         self.has_crc = has_crc = False
@@ -95,14 +92,14 @@ class LoRaRX(gr.top_block, Qt.QWidget):
         tune_args = ['']
         settings = ['']
 
-        self.soapy_hackrf_source_0 = soapy.source(dev, "fc32", 1, '',
+        self.soapy_hackrf_source_0 = soapy.source(dev, "fc32", 1, 'clock_source=external',
                                   stream_args, tune_args, settings)
         self.soapy_hackrf_source_0.set_sample_rate(0, 1000000)
         self.soapy_hackrf_source_0.set_bandwidth(0, 0)
         self.soapy_hackrf_source_0.set_frequency(0, center_freq)
         self.soapy_hackrf_source_0.set_gain(0, 'AMP', False)
-        self.soapy_hackrf_source_0.set_gain(0, 'LNA', min(max(32, 0.0), 40.0))
-        self.soapy_hackrf_source_0.set_gain(0, 'VGA', min(max(16, 0.0), 62.0))
+        self.soapy_hackrf_source_0.set_gain(0, 'LNA', min(max(0, 0.0), 40.0))
+        self.soapy_hackrf_source_0.set_gain(0, 'VGA', min(max(32, 0.0), 62.0))
         self.qtgui_time_sink_x_0_2 = qtgui.time_sink_c(
             ndisp, #size
             samp_rate, #samp_rate
@@ -260,15 +257,9 @@ class LoRaRX(gr.top_block, Qt.QWidget):
         self.lora_sdr_fft_demod_1 = lora_sdr.fft_demod( soft_decoding, True)
         self.lora_sdr_dewhitening_0 = lora_sdr.dewhitening()
         self.lora_sdr_deinterleaver_0 = lora_sdr.deinterleaver( soft_decoding)
-        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, 10, 200)
-        self._eb_n0_dB_win = qtgui.RangeWidget(self._eb_n0_dB_range, self.set_eb_n0_dB, "Eb/N0", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.top_grid_layout.addWidget(self._eb_n0_dB_win, 2, 0, 1, 1)
-        for r in range(2, 3):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.top_grid_layout.setColumnStretch(c, 1)
         self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(8)
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\LoRasdroutputSNR15', False)
+        self.blocks_float_to_char_0 = blocks.float_to_char(1, 1)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\LoRasdroutputSNR-5', False)
         self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_char_to_float_0_1_0 = blocks.char_to_float(1, 1)
 
@@ -277,11 +268,12 @@ class LoRaRX(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.msg_connect((self.lora_sdr_header_decoder_0, 'frame_info'), (self.lora_sdr_frame_sync_0, 'frame_info'))
+        self.connect((self.blocks_char_to_float_0_1_0, 0), (self.blocks_float_to_char_0, 0))
         self.connect((self.blocks_char_to_float_0_1_0, 0), (self.qtgui_time_sink_x_0_1, 0))
+        self.connect((self.blocks_float_to_char_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.lora_sdr_deinterleaver_0, 0), (self.lora_sdr_hamming_dec_0, 0))
         self.connect((self.lora_sdr_dewhitening_0, 0), (self.blocks_char_to_float_0_1_0, 0))
-        self.connect((self.lora_sdr_dewhitening_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.lora_sdr_fft_demod_1, 0), (self.lora_sdr_gray_mapping_0, 0))
         self.connect((self.lora_sdr_frame_sync_0, 0), (self.lora_sdr_fft_demod_1, 0))
         self.connect((self.lora_sdr_frame_sync_0, 0), (self.qtgui_time_sink_x_0, 0))
@@ -314,14 +306,6 @@ class LoRaRX(gr.top_block, Qt.QWidget):
     def set_bw(self, bw):
         self.bw = bw
         self.set_Rb((self.sf*self.bw)/(2**self.sf))
-        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
-
-    def get_sig_power(self):
-        return self.sig_power
-
-    def set_sig_power(self, sig_power):
-        self.sig_power = sig_power
-        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
 
     def get_packet_len(self):
         return self.packet_len
@@ -330,26 +314,24 @@ class LoRaRX(gr.top_block, Qt.QWidget):
         self.packet_len = packet_len
         self.set_pay_len(self.packet_len)
 
-    def get_eb_n0_dB(self):
-        return self.eb_n0_dB
-
-    def set_eb_n0_dB(self, eb_n0_dB):
-        self.eb_n0_dB = eb_n0_dB
-        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
-
     def get_Rb(self):
         return self.Rb
 
     def set_Rb(self, Rb):
         self.Rb = Rb
         self.set_Rs(self.Rb/self.sf)
-        self.set_noise_power(((self.sig_power*self.bw)/self.Rb)*10**(-self.eb_n0_dB/10))
 
     def get_soft_decoding(self):
         return self.soft_decoding
 
     def set_soft_decoding(self, soft_decoding):
         self.soft_decoding = soft_decoding
+
+    def get_sig_power(self):
+        return self.sig_power
+
+    def set_sig_power(self, sig_power):
+        self.sig_power = sig_power
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -377,12 +359,6 @@ class LoRaRX(gr.top_block, Qt.QWidget):
 
     def set_num_samples(self, num_samples):
         self.num_samples = num_samples
-
-    def get_noise_power(self):
-        return self.noise_power
-
-    def set_noise_power(self, noise_power):
-        self.noise_power = noise_power
 
     def get_ndisp(self):
         return self.ndisp
