@@ -1,3 +1,7 @@
+%% TEST modulations and demodulations of a message of bits
+% AUTHOR: Clara SORRE
+% This MATLAB code ........................................
+
 function test_total_modulationsandLora(msg_bits_length)
 
     tic; %timer to see how long is the simulation

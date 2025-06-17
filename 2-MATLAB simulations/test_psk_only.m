@@ -1,3 +1,7 @@
+%% TEST PSK modulation and demodulation of a message of bits
+% AUTHOR: Clara SORRE
+% This MATLAB code ........................................
+
 function test_psk_only(msg_bits_length)
     tic; %for the elapsed time
     n = msg_bits_length; %length of message

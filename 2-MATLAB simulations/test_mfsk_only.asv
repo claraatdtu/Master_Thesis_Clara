@@ -1,9 +1,12 @@
 %% TEST MFSK modulation and demodulation of a message of bits
 % AUTHOR: Clara SORRE
-% DESCRIPTION OF THE CODE: This MATLAB code simulates the BER 
+% DESCRIPTION OF THE CODE: This MATLAB code simulates the BER of LoRa CSS 
+% modulation under AWGN for SF from 7 to 12.
+% The simulation focuses on the modulation and demodulation only, the
+% preprocessing such as Whitening, Gray mapping, Hamming encoding and also
+% interleaving are not considered here.
 % IN INPUT: msg_bits_length = the total number of random input bits to simulate
-% IN OUTPUT: the BER vs Eb/N0 plot (both theoretical and simulated graphs)
-
+% IN OUTPUT: the BER vs Eb/N0 plot
 function test_mfsk_only(msg_bits_length)
     tic; %elapsed time 
     n = msg_bits_length;% number of bits
