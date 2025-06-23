@@ -1,12 +1,17 @@
+%% TEST PSK modulation and demodulation of a message of bits
+% AUTHOR: Clara SORRE
+% This MATLAB code ........................................
+
 function test_psk_only(msg_bits_length)
     tic; %for the elapsed time
     n = msg_bits_length; %length of message
     b = randi([0, 1], 1, n); %random bit stream
-    samples_per_bit = 40; %sampling resolution per bit
+    samples_per_bit = 16; %sampling resolution per bit SHOULD BE THAT!!
+    %bits per symbol should be 1 or 2 according to BPSK or QPSK...
     bitrate = 366.2;
     %fs = bitrate * samples_per_bit;
     t = 0:1/samples_per_bit:1 - 1/samples_per_bit; %time vector for 1 bit/symbol duration
-    f = 868e6;%carrier frequency
+    f = 1;%868e6;%carrier frequency
     bw_b=20*bitrate; %assumption bandwidth bpsk
     bw_q=10*bitrate;%bandwidth qpsk
 
@@ -46,14 +51,15 @@ function test_psk_only(msg_bits_length)
     ebn0_range = -5:1:15;
     BER_B = zeros(size(ebn0_range));
     BER_Q = zeros(size(ebn0_range));
-
+    marker_list = {'o', 's', 'd'};
+    color = ['b'];
     for idx = 1:length(ebn0_range)
         ebno = ebn0_range(idx);
 
         % BPSK
         %ebno_adj_B = ebno - 10*log10(samples_per_bit);
-        snr_B = (10^(ebno/10))*(bitrate/bw_b); %converts EbN0 to SNR using specific bandwidth
-        snr_adj_B= 10*log10(snr_B);%-10*log10(samples_per_bit)
+        snr_B = (10^((ebno)/10))*(bitrate/bw_b); %converts EbN0 to SNR using specific bandwidth
+        snr_adj_B= 10*log10(snr_B);%- 10*log10(samples_per_bit);%-10*log10(samples_per_bit)
        
         bpskn = awgn(bpsk, snr_adj_B, 'measured'); %add awgn to the bpsk signal
         bpskn_matrix = reshape(bpskn, samples_per_bit, []); %reshape
@@ -63,8 +69,9 @@ function test_psk_only(msg_bits_length)
         BER_B(idx) = mean(D_B ~= b);%compare with the b transmitted bits
 
         % QPSK 
+        
         snr_Q = (10^(ebno/10))*(bitrate/bw_q);
-        snr_adj_Q= 10*log10(snr_Q) 10*log10(2); %same snr conversion
+        snr_adj_Q= 10*log10(snr_Q)+10*log10(2); %same snr conversion
         %ebno_adj_Q = ebno + 10*log10(2) - 10*log10(samples_per_bit);
         qpskn = awgn(qpsk, snr_adj_Q, 'measured'); %noise addition
         ref_matrix = zeros(samples_per_bit, 4); %reference waveforms for each qpsk phase
@@ -74,10 +81,10 @@ function test_psk_only(msg_bits_length)
         end
 
         qpskn_matrix = reshape(qpskn, samples_per_bit, []);
-        corrs = ref_matrix' * qpskn_matrix;
-        [~, idx_syms] = max(corrs, [], 1);
-        Dq = reshape(dec2bin(idx_syms - 1, 2).' - '0', 1, []);
-        BER_Q(idx) = mean(Dq ~= b_qpsk(1:length(Dq)));
+        corrs = ref_matrix' * qpskn_matrix; %correlate received signal with each reference
+        [~, idx_syms] = max(corrs, [], 1); %choose max index
+        Dq = reshape(dec2bin(idx_syms - 1, 2).' - '0', 1, []); %convert indices back to bit pair
+        BER_Q(idx) = mean(Dq ~= b_qpsk(1:length(Dq))); %compute ber
     end
 
     %% theoretical BER 
@@ -89,10 +96,10 @@ function test_psk_only(msg_bits_length)
 
     %% plot
     figure;
-    semilogy(EbN0_dB, Pb_BPSK, 'DisplayName', 'Theoretical BPSK/QPSK');
+    semilogy(EbN0_dB, Pb_BPSK,  'LineWidth', 1.5, 'DisplayName' , 'Theoretical BPSK/QPSK','Marker', marker_list{1}, 'Color', colors(1));
     hold on;
-    semilogy(ebn0_range, BER_B,'DisplayName', 'Sim BPSK');
-    semilogy(ebn0_range, BER_Q,  'DisplayName', 'Sim QPSK');
+    semilogy(ebn0_range, BER_B,  '--', 'LineWidth', 1.5, 'DisplayName', 'Sim BPSK', 'Marker', marker_list{2});
+    semilogy(ebn0_range, BER_Q,  '--',  'LineWidth', 1.5, 'DisplayName', 'Sim QPSK', 'Marker', marker_list{3});
     grid on;
     xlabel('E_b/N_0 (dB)');
     ylabel('BER (P_b)');
@@ -100,6 +107,6 @@ function test_psk_only(msg_bits_length)
     legend show;
     ylim([1e-7 1]);
     xlim([-5 20]);
-
+    hold off;
     toc;
 end

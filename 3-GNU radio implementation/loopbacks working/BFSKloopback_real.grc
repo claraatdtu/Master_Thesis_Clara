@@ -73,7 +73,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: int((bps*samp_rate)/Rb)
+    value: int((bps*samp_rate)/Rb)*2
   states:
     bus_sink: false
     bus_source: false
@@ -141,7 +141,7 @@ blocks:
     start: '-5'
     step: 1/100
     stop: '15'
-    value: '-5'
+    value: '15'
     widget: counter_slider
   states:
     bus_sink: false
@@ -454,6 +454,25 @@ blocks:
     coordinate: [1256, 1368.0]
     rotation: 0
     state: enabled
+- name: blocks_file_sink_1
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU
+      radio implementation\SDR bandwidths\BFSKbw
+    type: float
+    unbuffered: 'False'
+    vlen: '1024'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3208, 260.0]
+    rotation: 0
+    state: enabled
 - name: blocks_file_source_0
   id: blocks_file_source
   parameters:
@@ -656,6 +675,24 @@ blocks:
     coordinate: [760, 452.0]
     rotation: 0
     state: enabled
+- name: blocks_stream_to_vector_0
+  id: blocks_stream_to_vector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2408, 304.0]
+    rotation: 0
+    state: enabled
 - name: blocks_throttle2_0_0
   id: blocks_throttle2
   parameters:
@@ -692,6 +729,24 @@ blocks:
     bus_structure: null
     coordinate: [1728, 796.0]
     rotation: 180
+    state: enabled
+- name: blocks_vector_to_stream_0
+  id: blocks_vector_to_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: '1'
+    type: float
+    vlen: '1024'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2928, 284.0]
+    rotation: 0
     state: enabled
 - name: digital_chunks_to_symbols_xx_0
   id: digital_chunks_to_symbols_xx
@@ -765,6 +820,29 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [328, 188.0]
+    rotation: 0
+    state: enabled
+- name: logpwrfft_x_0
+  id: logpwrfft_x
+  parameters:
+    affinity: ''
+    alias: ''
+    average: 'False'
+    avg_alpha: '1.0'
+    comment: ''
+    fft_size: '1024'
+    frame_rate: '30'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ref_scale: '1'
+    sample_rate: samp_rate
+    shift: 'True'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2664, 232.0]
     rotation: 0
     state: enabled
 - name: qtgui_number_sink_0_0
@@ -856,8 +934,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2368, 324.0]
-    rotation: 180
+    coordinate: [2744, 436.0]
+    rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
   id: qtgui_time_sink_x
@@ -1416,6 +1494,7 @@ connections:
 - [blocks_file_source_0, '0', virtual_sink_0_0_0_1_0, '0']
 - [blocks_float_to_uchar_0, '0', blocks_unpack_k_bits_bb_1, '0']
 - [blocks_keep_one_in_n_0, '0', blocks_float_to_uchar_0, '0']
+- [blocks_multiply_const_vxx_0_0, '0', blocks_stream_to_vector_0, '0']
 - [blocks_multiply_const_vxx_0_0, '0', blocks_throttle2_0_0, '0']
 - [blocks_pack_k_bits_bb_0, '0', digital_chunks_to_symbols_xx_0, '0']
 - [blocks_repeat_0_0_0, '0', blocks_char_to_float_0_2_0, '0']
@@ -1426,14 +1505,17 @@ connections:
 - [blocks_skiphead_0_1, '0', blocks_char_to_float_0_1_0, '0']
 - [blocks_skiphead_0_1, '0', fec_ber_bf_0_0, '0']
 - [blocks_stream_to_tagged_stream_0, '0', blocks_pack_k_bits_bb_0, '0']
+- [blocks_stream_to_vector_0, '0', logpwrfft_x_0, '0']
 - [blocks_throttle2_0_0, '0', blocks_add_xx_1_0, '1']
 - [blocks_throttle2_0_0, '0', qtgui_sink_x_0_0_0, '0']
 - [blocks_unpack_k_bits_bb_1, '0', blocks_repeat_0_0_0, '0']
 - [blocks_unpack_k_bits_bb_1, '0', virtual_sink_0_0_0_1_0_0, '0']
+- [blocks_vector_to_stream_0, '0', blocks_file_sink_1, '0']
 - [digital_chunks_to_symbols_xx_0, '0', blocks_repeat_1, '0']
 - [digital_chunks_to_symbols_xx_0, '0', qtgui_time_sink_x_2_0_0_2_0, '0']
 - [epy_block_0_0, '0', qtgui_number_sink_0_0, '0']
 - [fec_ber_bf_0_0, '0', epy_block_0_0, '0']
+- [logpwrfft_x_0, '0', blocks_vector_to_stream_0, '0']
 - [virtual_source_0_0_0_0_0_0_0_0, '0', blocks_file_sink_0, '0']
 - [virtual_source_0_0_0_0_0_0_0_0, '0', blocks_skiphead_0_0_0, '0']
 - [virtual_source_0_0_0_0_1_0, '0', blocks_delay_1_0_0_0_0, '0']

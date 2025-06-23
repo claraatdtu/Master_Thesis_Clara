@@ -27,6 +27,7 @@ from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
+from gnuradio.fft import logpwrfft
 import BFSKloopbacktry_epy_block_0_0 as epy_block_0_0  # embedded python block
 import sip
 
@@ -73,7 +74,7 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
         self.m = m = int(math.log2(M))
         self.Rb = Rb = (sf_lora*bw_lora)/2**sf_lora
         self.samp_rate = samp_rate = 1000000
-        self.eb_n0_dB = eb_n0_dB = -5
+        self.eb_n0_dB = eb_n0_dB = 15
         self.bw = bw = (2**m)*Rb/m
         self.bps = bps = int(math.log(M,2))
         self.sig_power = sig_power = 1
@@ -83,7 +84,7 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
         self.ndisp = ndisp = 2000
         self.fsk_deviation = fsk_deviation = bw/m
         self.center_freq = center_freq = 868100000
-        self.Sps = Sps = int((bps*samp_rate)/Rb)
+        self.Sps = Sps = int((bps*samp_rate)/Rb)*2
         self.Rs = Rs = Rb/bps
 
         ##################################################
@@ -383,8 +384,16 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
         self.qtgui_number_sink_0_0.enable_autoscale(False)
         self._qtgui_number_sink_0_0_win = sip.wrapinstance(self.qtgui_number_sink_0_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_number_sink_0_0_win)
+        self.logpwrfft_x_0 = logpwrfft.logpwrfft_c(
+            sample_rate=samp_rate,
+            fft_size=1024,
+            ref_scale=1,
+            frame_rate=30,
+            avg_alpha=1.0,
+            average=False,
+            shift=True)
         self.fec_ber_bf_0_0 = fec.ber_bf(False, 100, -7.0)
-        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, -5, 200)
+        self._eb_n0_dB_range = qtgui.Range(-5, 15, 1/100, 15, 200)
         self._eb_n0_dB_win = qtgui.RangeWidget(self._eb_n0_dB_range, self.set_eb_n0_dB, "Eb/N0", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._eb_n0_dB_win, 2, 0, 1, 1)
         for r in range(2, 3):
@@ -392,8 +401,10 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bf([0, 1], 1)
+        self.blocks_vector_to_stream_0 = blocks.vector_to_stream(gr.sizeof_float*1024, 1)
         self.blocks_unpack_k_bits_bb_1 = blocks.unpack_k_bits_bb(m)
         self.blocks_throttle2_0_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
+        self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, 1)
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, packet_len, "packet_len")
         self.blocks_skiphead_0_1 = blocks.skiphead(gr.sizeof_char*1, 0)
         self.blocks_skiphead_0_0_0 = blocks.skiphead(gr.sizeof_char*1, 0)
@@ -406,6 +417,8 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
         self.blocks_float_to_uchar_0 = blocks.float_to_uchar(1, 1, 0)
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\sdrinput', False, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
+        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_float*1024, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR bandwidths\\BFSKbw', False)
+        self.blocks_file_sink_1.set_unbuffered(False)
         self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\BFSKsdroutput-5', False)
         self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_delay_1_0_0_0_0 = blocks.delay(gr.sizeof_char*1, 0)
@@ -437,6 +450,7 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_file_source_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_unpack_k_bits_bb_1, 0))
         self.connect((self.blocks_keep_one_in_n_0, 0), (self.blocks_float_to_uchar_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.blocks_stream_to_vector_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.blocks_throttle2_0_0, 0))
         self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
         self.connect((self.blocks_repeat_0_0_0, 0), (self.blocks_char_to_float_0_2_0, 0))
@@ -447,14 +461,17 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_skiphead_0_1, 0), (self.blocks_char_to_float_0_1_0, 0))
         self.connect((self.blocks_skiphead_0_1, 0), (self.fec_ber_bf_0_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
+        self.connect((self.blocks_stream_to_vector_0, 0), (self.logpwrfft_x_0, 0))
         self.connect((self.blocks_throttle2_0_0, 0), (self.blocks_add_xx_1_0, 1))
         self.connect((self.blocks_throttle2_0_0, 0), (self.qtgui_sink_x_0_0_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_1, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_1, 0), (self.blocks_repeat_0_0_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_1, 0), (self.blocks_skiphead_0_0_0, 0))
+        self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_file_sink_1, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.blocks_repeat_1, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.qtgui_time_sink_x_2_0_0_2_0, 0))
         self.connect((self.fec_ber_bf_0_0, 0), (self.qtgui_number_sink_0_0, 0))
+        self.connect((self.logpwrfft_x_0, 0), (self.blocks_vector_to_stream_0, 0))
 
 
     def closeEvent(self, event):
@@ -502,7 +519,7 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
     def set_Rb(self, Rb):
         self.Rb = Rb
         self.set_Rs(self.Rb/self.bps)
-        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb)*2)
         self.set_bw((2**self.m)*self.Rb/self.m)
 
     def get_samp_rate(self):
@@ -510,11 +527,12 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb)*2)
         self.analog_frequency_modulator_fc_0.set_sensitivity(((2*math.pi*self.fsk_deviation)/self.samp_rate))
         self.analog_quadrature_demod_cf_0_0.set_gain((self.samp_rate/(2*math.pi*self.fsk_deviation)))
         self.blocks_multiply_const_vxx_0_0.set_k(self.samp_rate/(2*math.pi*self.fsk_deviation))
         self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
+        self.logpwrfft_x_0.set_sample_rate(self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0_2_0.set_samp_rate(self.samp_rate)
@@ -542,7 +560,7 @@ class BFSKloopbacktry(gr.top_block, Qt.QWidget):
     def set_bps(self, bps):
         self.bps = bps
         self.set_Rs(self.Rb/self.bps)
-        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
+        self.set_Sps(int((self.bps*self.samp_rate)/self.Rb)*2)
 
     def get_sig_power(self):
         return self.sig_power

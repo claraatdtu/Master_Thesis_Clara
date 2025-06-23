@@ -1,6 +1,10 @@
 %% TEST MFSK modulation and demodulation of a message of bits
 % AUTHOR: Clara SORRE
-% DESCRIPTION OF THE CODE: This MATLAB code simulates the BER 
+% DESCRIPTION OF THE CODE: This MATLAB code simulates the BER of MFSK
+% modulation schemes for M = 2,4,8 and 16, under AWGN.
+% The simulation focuses on the modulation, the transmission and demodulation. 
+% The center frequency used here is 1 (simulated directly in the baseband, without simulating a high-frequency RF carrier) 
+% with the assumption that they would later be reconverted to the carrier frequency used in a the real system.
 % IN INPUT: msg_bits_length = the total number of random input bits to simulate
 % IN OUTPUT: the BER vs Eb/N0 plot (both theoretical and simulated graphs)
 
@@ -8,17 +12,19 @@ function test_mfsk_only(msg_bits_length)
     tic; %elapsed time 
     n = msg_bits_length;% number of bits
     b = randi([0, 1], 1, n); % random binary message
-    samples_per_bit_map = containers.Map( {2, 4, 8, 16}, {28, 28, 37, 64} ); %add calibrated values of samples per bit for trade off time/orthogonality
+    samples_per_bit_map = containers.Map( {2, 4, 8, 16},{100, 28, 38, 64} ); %{28, 28, 37, 64} ); %add calibrated values of samples per bit for trade off time/orthogonality
     %a map is used: associate modulations M to samples per bit
-    bitrate = 366.2; % bitrate in bits per second
+    bitrate = 366.2; % bitrate in bits per second HERE FOR SF=7
     ebn0_range = -5:1:15;% Eb/N0 range in dB
     BER_sim = struct(); % simulated BER
     BER_th = struct(); % theoretical BER
     grid on;
     colors = ['b', 'r', 'g', 'm'];% plot colors
+    marker_list = {'o', 's', 'd', '^'};
     M_values = [2, 4, 8, 16];
-    bw_values = zeros(1, length(M_values));  % preallocate bw 
-    for idx = 1:length(M_values) %loop through each M order
+    bw_values = zeros(1, length(M_values));  % preallocate bw
+    %loop through each M order
+    for idx = 1:length(M_values) 
         M = M_values(idx);
         bits_per_sym = log2(M); %number of bits per FSK symbol
         bw_values(idx) = (M * bitrate) / bits_per_sym; %bw associated 
@@ -27,11 +33,10 @@ function test_mfsk_only(msg_bits_length)
         current_samples_per_bit = samples_per_bit_map(M);
         t_current = linspace(0, 1, current_samples_per_bit + 1); %time vector for 1 symbol
         t_current(end) = [];  % remove the last point to have exactly current_samples_per_bit samples
-        
-        symM = zeros(current_samples_per_bit, M); %M waveforms
+        symM = zeros(current_samples_per_bit, M); %M orthogonal waveforms
         for k = 0:M-1
-            fk = 1 + k;  % frequencies: 1 to M
-            wave = sin(2*pi*fk*t_current);
+            fk = (1+k);  % frequencies: 1 to M: simulate in base band and then upconverted for transmission
+            wave = sin(2*pi*fk*t_current);%sinus wave
             symM(:, k+1) = wave / norm(wave);  % normalized waveform
         end
         bM_matrix = reshape(bM, bits_per_sym, []).'; %reshape the bits into symbols
@@ -46,7 +51,6 @@ function test_mfsk_only(msg_bits_length)
             snr_sym_dB = 10*log10(snr_sym); 
             rx_signal = awgn(tx_signal, snr_sym_dB, 'measured'); %add the awgn
             rx_matrix = reshape(rx_signal, current_samples_per_bit, []); %reshape into symbols
-
             energies = zeros(M, size(rx_matrix, 2)); %energy detection
             for m = 1:M
                 template = symM(:, m);
@@ -59,7 +63,7 @@ function test_mfsk_only(msg_bits_length)
         end
 
         BER_sim.(['F', num2str(M)]) = BER;
-        semilogy(ebn0_range, BER, '--', 'DisplayName', [num2str(M) '-FSK Sim'], 'Color', colors(idx)); % Plot the simulated BER
+        semilogy(ebn0_range, BER, '--', 'LineWidth', 1.5,'DisplayName', [num2str(M) '-FSK Sim'], 'Marker', marker_list{idx},'Color', colors(idx)); % Plot the simulated BER
         hold on;
     end
     for idx = 1:length(M_values) % Theoretical BER (non-coherent orthogonal MFSK)
@@ -94,17 +98,24 @@ function test_mfsk_only(msg_bits_length)
         end
 
         BER_th.(['F', num2str(M)]) = Pb;
-        semilogy(ebn0_range, Pb, 'DisplayName', [num2str(M) '-FSK Theory'], 'Color', colors(idx));%plot ber
+        semilogy(ebn0_range, Pb, 'LineWidth', 1.5,'DisplayName', [num2str(M) '-FSK Theory'], 'Marker', marker_list{idx},'Color', colors(idx));%plot ber
     end
     xlabel('E_b/N_0 [dB]');     % plot
     ylabel('Bit Error Rate (BER)');
     legend('Location', 'southwest');
     title('Simulated vs. Theoretical BER for Non-coherent MFSK');
-    ylim([1e-7, 1]);
+    ylim([1e-5, 1]);
     grid on;
     hold off;
     toc;
 end
+
+
+
+
+
+
+
 
 
         % try

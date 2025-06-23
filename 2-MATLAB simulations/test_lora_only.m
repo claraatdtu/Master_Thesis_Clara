@@ -22,17 +22,19 @@ function test_lora_only(msg_bits_length) % LoRa BER Simulation
         SF = SF_range(sf_idx);
         M = 2^SF; %number of possible symbols
         Ns = M; % samples per symbol
-        Rs = bw / M; % symbol rate
+        %Rs = bw / M; % symbol rate
         %Rb = Rs * SF; % Bit rate
         num_symbols = floor(n / SF);  % full LoRa symbols
         b_cut = b(1:num_symbols * SF); % trim the bits
         b_matrix = reshape(b_cut, SF, []).'; % SF bits per row
         data_tx = bi2de(b_matrix, 'left-msb'); % convert to integers
-        t = (0:Ns-1) / bw; % Time vector
-        Ts = 1 / Rs;
+        fs= bw;% sampling frequency in Hz: bw going from -bw/2 to bw/2=> fold frequencies higher than bw/2 back to -bw/2 because of Nyquist sampling theorem
+        %in real hardware will need to respect nyquist condition
+        Ts = Ns / bw;%symbol duration
+        t = (0:Ns-1) / fs; % Time vector of one symbol
         downchirp = exp(-1j * 2 * pi * ((-bw/2)*t + (bw/(2*Ts))*t.^2)); %downchirp
         base_chirp = exp(1j * 2 * pi * (bw/(2*Ts)) * t.^2); %base up chirp 
-        f0_all = -bw/2 + (bw/M)*(0:M-1); % frequency offsets
+        f0_all = -bw/2 + (bw/M)*(0:M-1); % frequency offsets such as f0 =f_offset - bw/2
         for eb_idx = 1:length(EbN0_dB)
             EbN0 = EbN0_dB(eb_idx);
             chirps = base_chirp .* exp(1j * 2 * pi * f0_all.' * t); % all the reference chirps (M x Ns)
@@ -78,4 +80,6 @@ function test_lora_only(msg_bits_length) % LoRa BER Simulation
     ylim([1e-5, 1]);
     hold off;
     toc; % end timing
+
+    
 end

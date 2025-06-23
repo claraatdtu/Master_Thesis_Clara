@@ -88,6 +88,7 @@ function test_total_modulationsandLora(msg_bits_length)
         BER_Q(idx) = mean(Dq ~= b(1:length(Dq)));% Calculate BER
 
         %% FSK simulations (2-, 4-, 8-, 16-FSK)
+        
         for M = [2, 4, 8, 16] %loop for every MFSK configuration
             bits_per_sym = log2(M); %adjust the number of bits to a multiple of bits_per_sym
             nb = floor(n / bits_per_sym) * bits_per_sym;
