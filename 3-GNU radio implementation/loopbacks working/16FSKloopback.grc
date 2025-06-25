@@ -238,7 +238,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '7'
+    value: '12'
   states:
     bus_sink: false
     bus_source: false
@@ -498,7 +498,7 @@ blocks:
     append: 'False'
     comment: ''
     file: C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU
-      radio implementation\SDR bandwidths\16FSKbw
+      radio implementation\SDR bandwidths\16FSKbw12
     type: float
     unbuffered: 'False'
     vlen: '1024'

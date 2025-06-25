@@ -68,7 +68,7 @@ class QuatreFSKloopback(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.sf_lora = sf_lora = 7
+        self.sf_lora = sf_lora = 12
         self.bw_lora = bw_lora = 125000
         self.M = M = 4
         self.m = m = int(math.log2(M))
@@ -417,7 +417,7 @@ class QuatreFSKloopback(gr.top_block, Qt.QWidget):
         self.blocks_float_to_uchar_0 = blocks.float_to_uchar(1, 1, 0)
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\sdrinput', False, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
-        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_float*1024, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR bandwidths\\4FSKbw', False)
+        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_float*1024, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR bandwidths\\4FSKbw12', False)
         self.blocks_file_sink_1.set_unbuffered(False)
         self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\4FSKsdroutput-5', False)
         self.blocks_file_sink_0.set_unbuffered(False)

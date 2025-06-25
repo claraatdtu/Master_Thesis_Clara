@@ -98,7 +98,6 @@ hold off;
 
 
 %% 5- SNR as a function of z for different p values
-
 z_values = linspace(0, 111, 1000); % start from 0
 SF = 12; 
 p_values = 0:4; % parity bits
@@ -122,7 +121,6 @@ hold off;
 
 
 %% 6- z function of Pb
-
 Pb_values = linspace(10e-100, 10e-6 , 1000000); %Pb range
 z_values = sqrt(2) * erfcinv(2 * Pb_values); % compute z from Pb
 figure; %plot
@@ -134,7 +132,6 @@ grid on;
 
 
 %% 7- SNR_{dB} as a function of P_{b} for different SF values
-
 Pb_values = linspace(0, 10e-3, 1000); 
 z_values = sqrt(2) * erfcinv(2* Pb_values); % compute z from Pb
 p = 0; % parity bits

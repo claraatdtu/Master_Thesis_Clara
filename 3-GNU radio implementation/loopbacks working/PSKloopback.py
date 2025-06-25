@@ -70,10 +70,10 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.constellation = constellation = digital.constellation_bpsk().points()
-        self.sf_lora = sf_lora = 7
+        self.constellation = constellation = digital.constellation_qpsk().points()
+        self.sf_lora = sf_lora = 12
         self.bw_lora = bw_lora = 125000
-        self.Sps = Sps = 30
+        self.Sps = Sps = 500
         self.M = M = len(constellation )
         self.sig_power = sig_power = 0.1
         self.samp_rate = samp_rate = 1000000
@@ -82,6 +82,8 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.bps = bps = int(math.log(M,2))
         self.beta = beta = 1
         self.Rb = Rb = (sf_lora*bw_lora)/2**sf_lora
+        self.qpsk = qpsk = digital.constellation_qpsk().base()
+        self.qpsk.set_npwr(1.0)
         self.packet_len = packet_len = 240
         self.num_samples = num_samples = 100000
         self.noise_power = noise_power = ((sig_power*bw_lora)/Rb)*10**(-eb_n0_dB/10)
@@ -90,8 +92,6 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.delay = delay = 16
         self.center_freq = center_freq = 868100000
         self.bw = bw = 10*Rb
-        self.bpsk = bpsk = digital.constellation_bpsk().base()
-        self.bpsk.set_npwr(1.0)
         self.Rs = Rs = Rb/bps
         self.Fmax = Fmax = samp_rate/2
 
@@ -395,7 +395,7 @@ class PSKloopback(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(bpsk)
+        self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(qpsk)
         self.digital_clock_recovery_mm_xx_0_0 = digital.clock_recovery_mm_cc((Sps*(1+0.0)), 0.01, 0.5, 0.1, 0.05)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(constellation, 1)
         self.blocks_vector_to_stream_0 = blocks.vector_to_stream(gr.sizeof_float*1024, 1)
@@ -411,7 +411,7 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_cc(1/(math.sqrt(2*M*(1.41421**2+1.41421**2))))
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\sdrinput', False, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
-        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_float*1024, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR bandwidths\\BPSKbw', False)
+        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_float*1024, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR bandwidths\\QPSKbw12', False)
         self.blocks_file_sink_1.set_unbuffered(False)
         self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\QPSKsdroutput15', False)
         self.blocks_file_sink_0.set_unbuffered(False)
@@ -577,6 +577,13 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.set_bw(10*self.Rb)
         self.set_noise_power(((self.sig_power*self.bw_lora)/self.Rb)*10**(-self.eb_n0_dB/10))
 
+    def get_qpsk(self):
+        return self.qpsk
+
+    def set_qpsk(self, qpsk):
+        self.qpsk = qpsk
+        self.digital_constellation_decoder_cb_0.set_constellation(self.qpsk)
+
     def get_packet_len(self):
         return self.packet_len
 
@@ -635,13 +642,6 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.bw = bw
         self.qtgui_sink_x_0_0.set_frequency_range(self.center_freq, (self.bw*8))
         self.qtgui_sink_x_0_0_0.set_frequency_range(self.center_freq, (self.bw*8))
-
-    def get_bpsk(self):
-        return self.bpsk
-
-    def set_bpsk(self, bpsk):
-        self.bpsk = bpsk
-        self.digital_constellation_decoder_cb_0.set_constellation(self.bpsk)
 
     def get_Rs(self):
         return self.Rs

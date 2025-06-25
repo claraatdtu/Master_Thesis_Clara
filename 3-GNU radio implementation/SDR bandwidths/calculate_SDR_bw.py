@@ -7,7 +7,7 @@ fft_size = 1024
 sample_rate = 1e6  # 1 MHz
 center_freq = 868.1e6  # Hz
 # FFT log power spectrum in dB from gnu
-data = np.fromfile(r"C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU radio implementation\SDR bandwidths\BPSKbw", dtype=np.float32)
+data = np.fromfile(r"C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU radio implementation\SDR bandwidths\BFSKbw12", dtype=np.float32)
 frames = data.reshape(-1, fft_size) # reshape if multiple frames
 freqs = np.linspace(center_freq - sample_rate / 2, center_freq + sample_rate / 2, fft_size) / 1e6  # frequency axis in MHz
 bin_width = sample_rate / fft_size # width of each frequency bin

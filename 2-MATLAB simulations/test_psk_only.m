@@ -1,4 +1,4 @@
-% TEST PSK modulation and demodulation of a message of bits
+%% TEST PSK modulation and demodulation of a message of bits
 % AUTHOR: Clara SORRE
 % This MATLAB code simulates the BER performance of BPSK and QPSK
 % over an AWGN channel. It compares the simulated BER against theoretical BER.

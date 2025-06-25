@@ -235,9 +235,6 @@ for x1 = 1:length(m_values)
         for x3 = 1:length(SF_values)
             SF = SF_values(x3);
             subcarriers_needed(x3, x2, x1)=(2^m)*ceil(bit_rate(x3, x2)/Rb_table(x3, x2, x1));
-            % 
-            % division(x3, x2, x1)=bit_rate(x3, x2)/Rb_table(x3, x2, x1);
-            %subcarriers_needed(x3, x2, x1) = ceil(division(x3, x2, x1)*M);
             if subcarriers_needed(x3, x2, x1)==0
                 BW_used(x3, x2, x1)= BW_table(x3, x2, x1);
             end
@@ -249,8 +246,6 @@ for x1 = 1:length(m_values)
                     can_achieve_lora_bit_rate(x3, x2, x1)= true;
                     if can_achieve_lora_bit_rate(x3, x2, x1) == true
                         BW_used(x3, x2, x1)=subcarriers_needed(x3, x2, x1)*bandwidth_needed_persub(x3, x2, x1);
-                        %remaining_bw(x3, x2, x1)=BW_LoRa-BW_used(x3, x2, x1);
-                        %spec_eff_mfsk_improved(x3, x2, x1)=Rb_table(x3, x2, x1)/BW_used(x3, x2, x1);
                     else
                         BW_used(x3, x2, x1)=subcarriers_needed(x3, x2, x1)*bandwidth_needed_persub(x3, x2, x1);
                     end
@@ -265,7 +260,6 @@ for x1 = 1:length(m_values)
 
     end
 end
-
 disp(BW_used)
 disp(subcarriers_needed)
 

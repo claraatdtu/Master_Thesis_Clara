@@ -85,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '30'
+    value: '292'
   states:
     bus_sink: false
     bus_source: false
@@ -521,7 +521,7 @@ blocks:
     append: 'False'
     comment: ''
     file: C:\Users\clsor\OneDrive\Documents\MATLAB\Master_Thesis_Clara\Master_Thesis_Clara\3-GNU
-      radio implementation\SDR bandwidths\QPSKbw
+      radio implementation\SDR bandwidths\QPSKbw12
     type: float
     unbuffered: 'False'
     vlen: '1024'

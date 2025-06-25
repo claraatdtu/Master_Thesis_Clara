@@ -6,10 +6,10 @@ eb_n0_dB = [-5, 0, 5, 10, 15];  % Eb/N0 values in dB
 target_ber = 1e-3;
 interpolate_target_ber = @(ebn0, ber, target) interp1(log10(ber), ebn0, log10(target), 'linear', 'extrap'); %interpolation function
 % BER results measured gnu radio
-ber_lorasf7 = [0.396657, 0.229680, 0.005685, 0.00002, 0.00000001];   %when ber=0: artificially 0.00000001
+ber_lorasf7 = [0.396657, 0.229680, 0.005685, 0.00002, 0.00000002];   %when ber=0: artificially 0.00000001
 ber_bfsk = [0.42288, 0.34419, 0.15655, 0.01876, 0.00004];  
 ber_4fsk = [0.39636, 0.29288, 0.1293, 0.01482, 0.00004];   
-ber_8fsk = [0.315653, 0.201418, 0.066603, 0.00315, 0.0000001]; %when ber=0: artificially 0.0000001
+ber_8fsk = [0.315653, 0.201418, 0.066603, 0.00315, 0.0000002]; %when ber=0: artificially 0.0000001
 ber_16fsk = [0.24627, 0.1374, 0.03234, 0.00069, 0.0000001]; %when ber=0: artificially 0.0000001
 ber_qpsk = [0.372220, 0.159881, 0.059364, 0.000780, 0.000010]; 
 ber_lorasf12 = [0.213394, 0.167567,0.000310,  0.00000002, 0.00000001];

@@ -12,7 +12,7 @@ function test_mfsk_only(msg_bits_length)
     tic; %elapsed time 
     n = msg_bits_length;% number of bits
     b = randi([0, 1], 1, n); % random binary message
-    samples_per_bit_map = containers.Map( {2, 4, 8, 16},{100, 28, 38, 64} ); %{28, 28, 37, 64} ); %add calibrated values of samples per bit for trade off time/orthogonality
+    samples_per_bit_map = containers.Map( {2, 4, 8, 16},{28, 28, 37, 64} ); %add calibrated values of samples per bit for trade off time/orthogonality
     %a map is used: associate modulations M to samples per bit
     bitrate = 366.2; % bitrate in bits per second HERE FOR SF=7
     ebn0_range = -5:1:15;% Eb/N0 range in dB
@@ -61,7 +61,6 @@ function test_mfsk_only(msg_bits_length)
             rx_bits = rx_bits(:).';%flatten to 1D
             BER(i) = mean(rx_bits ~= bM); % BER
         end
-
         BER_sim.(['F', num2str(M)]) = BER;
         semilogy(ebn0_range, BER, '--', 'LineWidth', 1.5,'DisplayName', [num2str(M) '-FSK Sim'], 'Marker', marker_list{idx},'Color', colors(idx)); % Plot the simulated BER
         hold on;
@@ -70,7 +69,6 @@ function test_mfsk_only(msg_bits_length)
         M = M_values(idx);
         bits_per_sym = log2(M);
         Pb = zeros(size(ebn0_range));
-
         for k = 1:length(ebn0_range)
             EbN0 = 10^(ebn0_range(k) / 10);  % linear scale
             Pb_k = 0;
@@ -83,20 +81,17 @@ function test_mfsk_only(msg_bits_length)
                 if C == 0 || ~isfinite(C)
                     continue;
                 end
-
                 exponent = (-n * bits_per_sym * EbN0) / (n + 1);
                 if exponent < -700  % prevent underflow in exp
                     exp_term = 0;
                 else
                     exp_term = exp(exponent);
                 end
-
                 term = ((M / 2) / (M - 1)) * ((-1)^(n + 1) / (n + 1)) * C * exp_term;
                 Pb_k = Pb_k + term;
             end
             Pb(k) = max(min(Pb_k, 1), 1e-10);  % avoid NaN/Inf
         end
-
         BER_th.(['F', num2str(M)]) = Pb;
         semilogy(ebn0_range, Pb, 'LineWidth', 1.5,'DisplayName', [num2str(M) '-FSK Theory'], 'Marker', marker_list{idx},'Color', colors(idx));%plot ber
     end
