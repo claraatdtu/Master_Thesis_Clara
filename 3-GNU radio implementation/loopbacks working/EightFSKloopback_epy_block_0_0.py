@@ -1,9 +1,9 @@
 import numpy as np
 from gnuradio import gr
+#this enables to bypass the block and print the BER in the logarithmic scale
+class inversedB(gr.sync_block):
 
-class inversedB(gr.sync_block):  
-
-    def __init__(self, ): 
+    def __init__(self, ):
         gr.sync_block.__init__(
             self,
             name='e_inversedB_ff',

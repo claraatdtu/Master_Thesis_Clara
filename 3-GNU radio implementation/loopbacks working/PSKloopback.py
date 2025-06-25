@@ -8,7 +8,7 @@
 # Title: PSKloopback
 # Author: clsor
 # GNU Radio version: 3.10.10.0
-
+"""This script provides the blocks for the BPSK/QPSK loopback modulation-demodulation with adding of AWGN. Changing from BPSK to QPSK is done by modyfing the constellation object and points."""
 from PyQt5 import Qt
 from gnuradio import qtgui
 from PyQt5 import QtCore
@@ -27,7 +27,6 @@ from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
-from gnuradio.fft import logpwrfft
 import PSKloopback_epy_block_0 as epy_block_0  # embedded python block
 import PSKloopback_wform as wform  # embedded python module
 import math
@@ -67,13 +66,11 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
-        ##################################################
-        # Variables
-        ##################################################
+      # Variables
         self.constellation = constellation = digital.constellation_qpsk().points()
-        self.sf_lora = sf_lora = 12
+        self.sf_lora = sf_lora = 7
         self.bw_lora = bw_lora = 125000
-        self.Sps = Sps = 500
+        self.Sps = Sps = 292
         self.M = M = len(constellation )
         self.sig_power = sig_power = 0.1
         self.samp_rate = samp_rate = 1000000
@@ -95,10 +92,7 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.Rs = Rs = Rb/bps
         self.Fmax = Fmax = samp_rate/2
 
-        ##################################################
-        # Blocks
-        ##################################################
-
+ # Blocks
         self.qtgui_time_sink_x_2_0 = qtgui.time_sink_f(
             (32*bps), #size
             samp_rate, #samp_rate
@@ -375,14 +369,6 @@ class PSKloopback(gr.top_block, Qt.QWidget):
 
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_freq_sink_x_0_win)
-        self.logpwrfft_x_0 = logpwrfft.logpwrfft_c(
-            sample_rate=samp_rate,
-            fft_size=1024,
-            ref_scale=1,
-            frame_rate=30,
-            avg_alpha=1.0,
-            average=False,
-            shift=True)
         self.interp_fir_filter_xxx_0_0 = filter.interp_fir_filter_ccf(1, h)
         self.interp_fir_filter_xxx_0_0.declare_sample_delay(0)
         self.interp_fir_filter_xxx_0 = filter.interp_fir_filter_ccf(Sps, h)
@@ -398,11 +384,9 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(qpsk)
         self.digital_clock_recovery_mm_xx_0_0 = digital.clock_recovery_mm_cc((Sps*(1+0.0)), 0.01, 0.5, 0.1, 0.05)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(constellation, 1)
-        self.blocks_vector_to_stream_0 = blocks.vector_to_stream(gr.sizeof_float*1024, 1)
         self.blocks_unpacked_to_packed_xx_0 = blocks.unpacked_to_packed_bb(bps, gr.GR_MSB_FIRST)
         self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(8)
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
-        self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, 1)
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, packet_len, "packet_len")
         self.blocks_skiphead_0_0 = blocks.skiphead(gr.sizeof_char*1, (bps*16))
         self.blocks_skiphead_0 = blocks.skiphead(gr.sizeof_char*1, (bps*16))
@@ -411,10 +395,6 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_cc(1/(math.sqrt(2*M*(1.41421**2+1.41421**2))))
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\sdrinput', False, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
-        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_float*1024, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR bandwidths\\QPSKbw12', False)
-        self.blocks_file_sink_1.set_unbuffered(False)
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\QPSKsdroutput15', False)
-        self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_delay_1_0_0_0 = blocks.delay(gr.sizeof_char*1, (delay*bps))
         self.blocks_char_to_float_0_1_2 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0_1_1 = blocks.char_to_float(1, 1)
@@ -440,7 +420,6 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_delay_1_0_0_0, 0), (self.blocks_skiphead_0_0, 0))
         self.connect((self.blocks_file_source_0, 0), (self.blocks_delay_1_0_0_0, 0))
         self.connect((self.blocks_file_source_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.blocks_stream_to_vector_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.blocks_throttle2_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.blocks_packed_to_unpacked_xx_0, 0))
@@ -451,13 +430,10 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_skiphead_0_0, 0), (self.blocks_char_to_float_0_1, 0))
         self.connect((self.blocks_skiphead_0_0, 0), (self.fec_ber_bf_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
-        self.connect((self.blocks_stream_to_vector_0, 0), (self.logpwrfft_x_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.blocks_add_xx_0, 1))
         self.connect((self.blocks_throttle2_0, 0), (self.qtgui_sink_x_0_0, 0))
-        self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_skiphead_0, 0))
         self.connect((self.blocks_unpacked_to_packed_xx_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
-        self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_file_sink_1, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.interp_fir_filter_xxx_0, 0))
         self.connect((self.digital_clock_recovery_mm_xx_0_0, 0), (self.analog_agc3_xx_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.blocks_char_to_float_0_1_1, 0))
@@ -466,7 +442,6 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.connect((self.interp_fir_filter_xxx_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
         self.connect((self.interp_fir_filter_xxx_0_0, 0), (self.digital_clock_recovery_mm_xx_0_0, 0))
         self.connect((self.interp_fir_filter_xxx_0_0, 0), (self.qtgui_freq_sink_x_0, 1))
-        self.connect((self.logpwrfft_x_0, 0), (self.blocks_vector_to_stream_0, 0))
 
 
     def closeEvent(self, event):
@@ -532,7 +507,6 @@ class PSKloopback(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.set_Fmax(self.samp_rate/2)
         self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
-        self.logpwrfft_x_0.set_sample_rate(self.samp_rate)
         self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate)
         self.qtgui_sink_x_0.set_frequency_range(self.center_freq, (self.samp_rate*8))
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)

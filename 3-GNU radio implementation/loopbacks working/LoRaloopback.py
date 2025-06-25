@@ -8,7 +8,7 @@
 # Title: loopback LoRa
 # Author: clsor
 # GNU Radio version: 3.10.10.0
-
+"""This script provides the blocks for the LoRa loopback modulation-demodulation with adding of AWGN."""
 from PyQt5 import Qt
 from gnuradio import qtgui
 from PyQt5 import QtCore
@@ -64,9 +64,7 @@ class untitled(gr.top_block, Qt.QWidget):
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
-        ##################################################
-        # Variables
-        ##################################################
+   # Variables
         self.sf = sf = 7
         self.bw = bw = 125000
         self.sig_power = sig_power = 1
@@ -89,10 +87,7 @@ class untitled(gr.top_block, Qt.QWidget):
         self.Rs = Rs = Rb/sf
         self.Idro = Idro = False
 
-        ##################################################
-        # Blocks
-        ##################################################
-
+       # Blocks
         self.qtgui_time_sink_x_2_0 = qtgui.time_sink_f(
             ndisp, #size
             samp_rate, #samp_rate

@@ -2,7 +2,7 @@
 ""Author: Clara SORRE""
 """This script opens the sdr input bitstream of 100 000 bits and read/display it. It does the same with the sdr output bitstream after reception with the hackrf. Then, it compares input and output to determine the BER. This is done for several output data files for each different SNR and modulation scheme.
 It also scans the received bitstreams for the preamble. This is done to ensure and to a diagnostic of the synchronization.
-""""
+"""
 
 
 #import os

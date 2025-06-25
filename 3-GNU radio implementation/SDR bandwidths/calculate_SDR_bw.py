@@ -1,4 +1,4 @@
-# This script opens the sdr input frames and read/display them. It computes the FFT power spectrum. This is done for several data files for each modulation scheme.
+""" This script opens the saved FFT power spectrum data collected from GNU Radio. It is used to evaluate the occupied 99% bandwidth of a transmitted signal over SDR. This is done for several data files for each modulation scheme."""
 #Author: Clara SORRE
 
 import numpy as np
@@ -33,22 +33,3 @@ plt.ylabel("Power (dB)")
 plt.grid(True)
 plt.show()
 
-# vec_db = frames[-1] #pick a frame
-# vec_lin = 10 ** (vec_db / 10)
-# total_power = np.sum(vec_lin) #normalize the energy
-# cumsum = np.cumsum(vec_lin)
-# # indices that contain 99% of energy
-# low = np.searchsorted(cumsum, 0.005 * total_power)
-# high = np.searchsorted(cumsum, 0.995 * total_power)
-#
-# bw_99 = (high - low) * bin_width # occupied bandwidth
-# print(f"The 99% occupied bandwidth is {bw_99:.2f} Hz")
-#
-#
-# # plot
-# plt.plot(freqs, vec_db)  #frequency axis
-# plt.title("FFT Power Spectrum for 8FSK(dB)")
-# plt.xlabel("Frequency (MHz)")
-# plt.ylabel("Power (dB)")
-# plt.grid(True)
-# plt.show()

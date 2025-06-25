@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: TX_evaluation_NF
+    id: RX_evaluation_NF
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: TX_evaluation_NF
+    title: Not titled yet
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 28.0]
+    coordinate: [240, 12.0]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -54,90 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 28.0]
-    rotation: 0
-    state: enabled
-- name: variable_qtgui
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    gui_hint: ''
-    label: ''
-    min_len: '200'
-    orient: QtCore.Qt.Horizontal
-    rangeType: float
-    start: '0'
-    step: '1'
-    stop: '1'
-    value: '0'
-    widget: counter_slider
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [656, 28.0]
-    rotation: 0
-    state: enabled
-- name: analog_sig_source_x_0
-  id: analog_sig_source_x
-  parameters:
-    affinity: ''
-    alias: ''
-    amp: 2.79*10**(-3)
-    comment: ''
-    freq: '0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    offset: '0'
-    phase: '0'
-    samp_rate: samp_rate
-    showports: 'False'
-    type: complex
-    waveform: analog.GR_COS_WAVE
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [192, 216.0]
-    rotation: 0
-    state: enabled
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: variable_qtgui
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [504, 268.0]
-    rotation: 0
-    state: enabled
-- name: blocks_throttle2_0
-  id: blocks_throttle2
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    ignoretag: 'True'
-    limit: auto
-    maximum: '0.1'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samples_per_second: samp_rate
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [744, 260.0]
+    coordinate: [376, 12.0]
     rotation: 0
     state: enabled
 - name: import_0
@@ -150,10 +67,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [512, 28.0]
+    coordinate: [504, 12.0]
     rotation: 0
     state: enabled
-- name: qtgui_freq_sink_x_0
+- name: qtgui_freq_sink_x_0_0
   id: qtgui_freq_sink_x
   parameters:
     affinity: ''
@@ -184,7 +101,7 @@ blocks:
     color9: '"dark green"'
     comment: ''
     ctrlpanel: 'False'
-    fc: center_freq
+    fc: center_freq-1500000
     fftsize: '1024'
     freqhalf: 'True'
     grid: 'False'
@@ -203,7 +120,7 @@ blocks:
     legend: 'True'
     maxoutbuf: '0'
     minoutbuf: '0'
-    name: '"tx"'
+    name: '"RX, Signal sent from TX"'
     nconnections: '1'
     norm_window: 'False'
     showports: 'False'
@@ -231,35 +148,35 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 124.0]
+    coordinate: [648, 140.0]
     rotation: 0
     state: enabled
-- name: soapy_hackrf_sink_0
-  id: soapy_hackrf_sink
+- name: soapy_hackrf_source_1
+  id: soapy_hackrf_source
   parameters:
     affinity: ''
     alias: ''
     amp: 'False'
-    bandwidth: '0'
+    bandwidth: samp_rate
     center_freq: center_freq
     comment: ''
     dev_args: driver=hackrf
+    gain: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
     samp_rate: samp_rate
     type: fc32
-    vga: '0'
+    vga: '30'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 264.0]
+    coordinate: [280, 152.0]
     rotation: 0
     state: enabled
 
 connections:
-- [analog_sig_source_x_0, '0', blocks_multiply_const_vxx_0, '0']
-- [blocks_multiply_const_vxx_0, '0', blocks_throttle2_0, '0']
-- [blocks_throttle2_0, '0', qtgui_freq_sink_x_0, '0']
-- [blocks_throttle2_0, '0', soapy_hackrf_sink_0, '0']
+- [soapy_hackrf_source_1, '0', qtgui_freq_sink_x_0_0, '0']
 
 metadata:
   file_format: 1

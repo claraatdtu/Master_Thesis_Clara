@@ -8,7 +8,7 @@
 # Title: 16FSKloopback
 # Author: clsor
 # GNU Radio version: 3.10.10.0
-
+"""This script provides the blocks for the 16-FSK loopback modulation-demodulation with adding of AWGN."""
 from PyQt5 import Qt
 from gnuradio import qtgui
 from PyQt5 import QtCore
@@ -65,9 +65,7 @@ class SixteenFSKloopback(gr.top_block, Qt.QWidget):
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
-        ##################################################
-        # Variables
-        ##################################################
+       # Variables
         self.sf_lora = sf_lora = 12
         self.bw_lora = bw_lora = 125000
         self.M = M = 16
@@ -87,10 +85,7 @@ class SixteenFSKloopback(gr.top_block, Qt.QWidget):
         self.Sps = Sps = int((bps*samp_rate)/Rb)
         self.Rs = Rs = Rb/bps
 
-        ##################################################
         # Blocks
-        ##################################################
-
         self.qtgui_time_sink_x_2_0_0_2_0 = qtgui.time_sink_f(
             (32*bps), #size
             samp_rate, #samp_rate
