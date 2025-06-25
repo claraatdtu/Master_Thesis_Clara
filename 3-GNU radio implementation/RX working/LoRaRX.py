@@ -256,10 +256,6 @@ class LoRaRX(gr.top_block, Qt.QWidget):
         self.lora_sdr_fft_demod_1 = lora_sdr.fft_demod( soft_decoding, True)
         self.lora_sdr_dewhitening_0 = lora_sdr.dewhitening()
         self.lora_sdr_deinterleaver_0 = lora_sdr.deinterleaver( soft_decoding)
-        self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(8)
-        self.blocks_float_to_char_0 = blocks.float_to_char(1, 1)
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\clsor\\OneDrive\\Documents\\MATLAB\\Master_Thesis_Clara\\Master_Thesis_Clara\\3-GNU radio implementation\\SDR files of bits\\LoRasdroutputSNR10', False)
-        self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_char_to_float_0_1_0 = blocks.char_to_float(1, 1)
 
 
@@ -267,13 +263,7 @@ class LoRaRX(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.msg_connect((self.lora_sdr_header_decoder_0, 'frame_info'), (self.lora_sdr_frame_sync_0, 'frame_info'))
-        
-
-
-        self.connect((self.blocks_char_to_float_0_1_0, 0), (self.blocks_float_to_char_0, 0))
         self.connect((self.blocks_char_to_float_0_1_0, 0), (self.qtgui_time_sink_x_0_1, 0))
-        self.connect((self.blocks_float_to_char_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
-        self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.lora_sdr_deinterleaver_0, 0), (self.lora_sdr_hamming_dec_0, 0))
         self.connect((self.lora_sdr_dewhitening_0, 0), (self.blocks_char_to_float_0_1_0, 0))
         self.connect((self.lora_sdr_fft_demod_1, 0), (self.lora_sdr_gray_mapping_0, 0))
@@ -433,8 +423,6 @@ def main(top_block_cls=LoRaRX, options=None):
     timer.timeout.connect(lambda: None)
 
     qapp.exec_()
-    def exec(self): self.tb.lora_sdr_frame_sync_0.set_history(32784)
-    
 
 if __name__ == '__main__':
     main()

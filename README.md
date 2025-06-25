@@ -19,9 +19,9 @@ For each, a random bitstream is generated, modulated, noise (AWGN) is added, and
 
 **3-GNU radio implementation**: This folder contains several subfolders that are used to perform step by step the real life SDR experiments with the 2 Hack RF Ones and GNU Radio described in the Thesis report. It includes .grc files and Python scripts for transmitting and receiving bitstreams, do some bandwidth measurements and sensitivity testing. When creating a .grc file, it creates automatically the main application block in the Python script (using GNU Radio and PyQt). Here is a small explanation for each subfolder:
 - *SDR files of bits*: It contains the input bitstream used for every SDR test (`sdrinput`), the output folder containing the output bitstreams obtained for each scheme for specific Eb/N0, the Python script `BERcomparison_input_output.py` computing the BER for each output bitstream and the MATLAB script `plot_ber_ebn0.m` plotting the final graph of all BER obtained with the SDR experiment.
-- *loopbacks working*: It contains the Python scripts and .grc files for each modulation scheme loopback flowgraph. The flowgraphs contain the modulation and demodulation of the input bitstream and the insertion of noise via the "Add" and "Noise Source" blocks. The Python scripts used are `LoRaloopback.py`, `BFSKloopback_real.py`, `QuatreFSKloopback.py`, `EightFSKloopback.py`, `SixteenFSKloopback.py`, `PSKloopback.py` and `PSKloopback_wform.py`. The used loopback flowgraphs in GNU Radio Companion are: `LoRaloopback.grc`, `BFSKloopback_real.grc`, `4FSKloopback.grc`, `8FSKloopback.grc`, `16FSKloopback.grc` and`PSKloopback.grc` (changing the constellation for QPSK or BPSK). 
-- *TX working*:
-- *RX working*:
+- *loopbacks working*: It contains the Python scripts and .grc files for each modulation scheme loopback flowgraph. The flowgraphs contain the modulation and demodulation of the input bitstream and the insertion of noise via the "Add" and "Noise Source" blocks. The Python scripts used are `LoRaloopback.py`, `BFSKloopback_real.py`, `QuatreFSKloopback.py`, `EightFSKloopback.py`, `SixteenFSKloopback.py`, `PSKloopback.py` and `PSKloopback_wform.py`. The used loopback flowgraphs in GNU Radio Companion are: `LoRaloopback.grc`, `BFSKloopback_real.grc`, `4FSKloopback.grc`, `8FSKloopback.grc`, `16FSKloopback.grc` and`PSKloopback.grc` (changing the constellation Object and Points for QPSK or BPSK). 
+- *TX working*: It contains the scripts used to transmit the input bitstream for each scheme via the HackRF One number 1 connected to the computer. The TX scripts are obtained from the *loopbacks working* scripts by removing the receiving part and adding a Soapy Hackrf Sink: `LoRaTX.grc`, `BFSKTX.grc`, `4FSKTX.grc`, `8FSKTX.grc`, `16FSKTX.grc` and`PSKTX.grc`
+- *RX working*: It contains the scripts used to receive the input bitstream for each scheme via the HackRF One number 2 connected to the computer. The TX scripts are obtained from the *loopbacks working* scripts by removing the transmitting part and adding a Soapy Hackrf Source/ `LoRaRX.grc`, `BFSKRX.grc`, `4FSKRX.grc`, `8FSKRX.grc`, `16FSKRX.grc` and`PSKRX.grc`
 - *SDR bandwidths*: It contains the Python script `calculate_SDR_bw.py` used to compute the 99% bandwidth for each modulation scheme, running at different bitrates. It also gathers 2 folders containing the output frequency bins used by each scheme, for bit rates similar to LoRa CSS SF=7 and SF=12.
 - *SDR evaluation of NF*: It contains 2 Python scripts/ GNU Radio: `TX_evaluation_NF.py` and `RX_evaluation_NF.py`. Both need a connection to a HackRF One. It evaluates the Noise Figure of the receiving HackRF. The objective is to introduce this measured value in the sensitivity calculation.
 - *old*: This folder is just a backup of earlier test files  and flowgraphs that were no selected.
@@ -46,12 +46,12 @@ analysis and testing, this project aims to understand the contributions of FEC a
 to LoRa’s sensitivity and spectrum efficiency. This project’s goal is also to comprehend the
 redundant data and collision avoidance contributions to sensitivity.
 The key objectives of this study are to:
-• Calculate the sensitivity of LoRa without FEC and evaluate FEC’s contribution to
+- Calculate the sensitivity of LoRa without FEC and evaluate FEC’s contribution to
 sensitivity.
-• Quantify the redundant information transmitted in a LoRa transmission.
-• Develop a mathematical approach to compare fairly the spectrum efficiency and sensitivity
+- Quantify the redundant information transmitted in a LoRa transmission.
+- Develop a mathematical approach to compare fairly the spectrum efficiency and sensitivity
 of LoRa and X-SK.
-• Analyze the role of Chirp Spread Spectrum in collision avoidance and its impact on
+- Analyze the role of Chirp Spread Spectrum in collision avoidance and its impact on
 sensitivity.
-• Simulate the different modulation schemes transmissions on MATLAB
-• Prototype the set up on SDR and perform tests to validate the theoretical findings.
+- Simulate the different modulation schemes transmissions on MATLAB
+- Prototype the set up on SDR and perform tests to validate the theoretical findings.

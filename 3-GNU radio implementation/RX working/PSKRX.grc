@@ -325,29 +325,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1312, 768.0]
+    coordinate: [1184, 512.0]
     rotation: 180
     state: enabled
-- name: analog_pwr_squelch_xx_0
-  id: analog_pwr_squelch_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha: 1e-4
-    comment: ''
-    gate: 'True'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    ramp: '0'
-    threshold: '-50'
-    type: complex
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2240, 580.0]
-    rotation: 180
-    state: disabled
 - name: blocks_char_to_float_0_1_0
   id: blocks_char_to_float
   parameters:
@@ -362,7 +342,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [60.0, 784]
+    coordinate: [52.0, 752]
     rotation: 270
     state: true
 - name: blocks_file_sink_0
@@ -381,75 +361,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1168, 1344.0]
+    coordinate: [1032, 904.0]
     rotation: 0
-    state: enabled
-- name: blocks_float_to_char_0
-  id: blocks_float_to_char
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    scale: '1'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [360, 1188.0]
-    rotation: 0
-    state: disabled
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: 1/Sps
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1944, 92.0]
-    rotation: 180
-    state: disabled
-- name: blocks_pack_k_bits_bb_0
-  id: blocks_pack_k_bits_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    k: '8'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [576, 1276.0]
-    rotation: 0
-    state: disabled
-- name: blocks_unpack_k_bits_bb_0
-  id: blocks_unpack_k_bits_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    k: '8'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [152, 572.0]
-    rotation: 180
     state: disabled
 - name: blocks_unpacked_to_packed_xx_0
   id: blocks_unpacked_to_packed_xx
@@ -467,7 +380,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [456, 572.0]
+    coordinate: [520, 556.0]
     rotation: 180
     state: enabled
 - name: digital_clock_recovery_mm_xx_0_0
@@ -504,7 +417,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [760, 692.0]
+    coordinate: [808, 564.0]
     rotation: 180
     state: enabled
 - name: digital_corr_est_cc_0
@@ -524,13 +437,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1464, 540.0]
+    coordinate: [1520, 540.0]
     rotation: 180
     state: enabled
 - name: digital_correlate_access_code_xx_ts_0
   id: digital_correlate_access_code_xx_ts
   parameters:
-    access_code: '0011'
+    access_code: '00110011011000111'
     affinity: ''
     alias: ''
     comment: ''
@@ -543,8 +456,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [240, 880.0]
-    rotation: 0
+    coordinate: [96, 544.0]
+    rotation: 180
     state: enabled
 - name: import_0
   id: import
@@ -575,7 +488,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2232, 412.0]
+    coordinate: [2216, 572.0]
     rotation: 180
     state: enabled
 - name: pdu_pdu_to_tagged_stream_0
@@ -592,9 +505,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [952, 1116.0]
+    coordinate: [680, 924.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: pdu_tagged_stream_to_pdu_0
   id: pdu_tagged_stream_to_pdu
   parameters:
@@ -609,119 +522,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 1108.0]
-    rotation: 0
-    state: enabled
-- name: qtgui_freq_sink_x_0
-  id: qtgui_freq_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'False'
-    average: '0.05'
-    axislabels: 'True'
-    bw: samp_rate
-    color1: '"blue"'
-    color10: '"dark blue"'
-    color2: '"red"'
-    color3: '"green"'
-    color4: '"black"'
-    color5: '"cyan"'
-    color6: '"magenta"'
-    color7: '"yellow"'
-    color8: '"dark red"'
-    color9: '"dark green"'
-    comment: ''
-    ctrlpanel: 'False'
-    fc: '0'
-    fftsize: '1024'
-    freqhalf: 'True'
-    grid: 'False'
-    gui_hint: ''
-    label: Relative Gain
-    label1: p1
-    label10: ''''''
-    label2: r1
-    label3: ''''''
-    label4: ''''''
-    label5: ''''''
-    label6: ''''''
-    label7: ''''''
-    label8: ''''''
-    label9: ''''''
-    legend: 'True'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    name: Interpolating Filter FIR
-    nconnections: '2'
-    norm_window: 'False'
-    showports: 'False'
-    tr_chan: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_tag: '""'
-    type: complex
-    units: dB
-    update_time: '0.10'
-    width1: '3'
-    width10: '1'
-    width2: '3'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    wintype: window.WIN_BLACKMAN_hARRIS
-    ymax: '10'
-    ymin: '-80'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2064, 996.0]
+    coordinate: [288, 924.0]
     rotation: 0
     state: disabled
-- name: qtgui_sink_x_0
-  id: qtgui_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    bw: samp_rate
-    comment: ''
-    fc: '0'
-    fftsize: '1024'
-    gui_hint: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    name: '""'
-    plotconst: 'True'
-    plotfreq: 'True'
-    plottime: 'True'
-    plotwaterfall: 'True'
-    rate: '10'
-    showports: 'False'
-    showrf: 'False'
-    type: complex
-    wintype: window.WIN_BLACKMAN_hARRIS
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2736, 372.0]
-    rotation: 0
-    state: enabled
 - name: qtgui_time_sink_x_0
   id: qtgui_time_sink_x
   parameters:
@@ -816,7 +619,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [992, 924.0]
+    coordinate: [1192, 764.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_1
@@ -913,8 +716,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [120, 1260.0]
-    rotation: 0
+    coordinate: [20.0, 992]
+    rotation: 270
     state: enabled
 - name: qtgui_time_sink_x_0_2
   id: qtgui_time_sink_x
@@ -1010,7 +813,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2720, 516.0]
+    coordinate: [2488, 260.0]
     rotation: 0
     state: enabled
 - name: soapy_hackrf_source_0
@@ -1033,61 +836,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2640, 640.0]
+    coordinate: [2552, 560.0]
     rotation: 180
     state: enabled
-- name: virtual_sink_0_1
-  id: virtual_sink
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: r1
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2012.0, 776]
-    rotation: 270
-    state: disabled
-- name: virtual_sink_0_2
-  id: virtual_sink
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: p1
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2452.0, 808]
-    rotation: 270
-    state: disabled
-- name: virtual_source_0
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: p1
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1792, 980.0]
-    rotation: 0
-    state: disabled
-- name: virtual_source_0_1
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: r1
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1800, 1044.0]
-    rotation: 0
-    state: disabled
 - name: wform
   id: epy_module
   parameters:
@@ -1143,34 +894,18 @@ blocks:
 connections:
 - [analog_agc3_xx_0, '0', digital_constellation_decoder_cb_0, '0']
 - [analog_agc3_xx_0, '0', qtgui_time_sink_x_0, '0']
-- [analog_pwr_squelch_xx_0, '0', digital_clock_recovery_mm_xx_0_0, '0']
-- [analog_pwr_squelch_xx_0, '0', interp_fir_filter_xxx_0_0, '0']
-- [analog_pwr_squelch_xx_0, '0', virtual_sink_0_1, '0']
-- [blocks_char_to_float_0_1_0, '0', blocks_float_to_char_0, '0']
 - [blocks_char_to_float_0_1_0, '0', qtgui_time_sink_x_0_1, '0']
-- [blocks_float_to_char_0, '0', blocks_pack_k_bits_bb_0, '0']
-- [blocks_multiply_const_vxx_0, '0', digital_clock_recovery_mm_xx_0_0, '0']
-- [blocks_multiply_const_vxx_0, '0', virtual_sink_0_1, '0']
-- [blocks_pack_k_bits_bb_0, '0', blocks_file_sink_0, '0']
-- [blocks_unpack_k_bits_bb_0, '0', blocks_char_to_float_0_1_0, '0']
-- [blocks_unpacked_to_packed_xx_0, '0', blocks_unpack_k_bits_bb_0, '0']
 - [blocks_unpacked_to_packed_xx_0, '0', digital_correlate_access_code_xx_ts_0, '0']
 - [digital_clock_recovery_mm_xx_0_0, '0', digital_corr_est_cc_0, '0']
 - [digital_constellation_decoder_cb_0, '0', blocks_unpacked_to_packed_xx_0, '0']
 - [digital_corr_est_cc_0, '0', analog_agc3_xx_0, '0']
 - [digital_correlate_access_code_xx_ts_0, '0', blocks_char_to_float_0_1_0, '0']
 - [digital_correlate_access_code_xx_ts_0, '0', pdu_tagged_stream_to_pdu_0, '0']
-- [interp_fir_filter_xxx_0_0, '0', blocks_multiply_const_vxx_0, '0']
 - [interp_fir_filter_xxx_0_0, '0', digital_clock_recovery_mm_xx_0_0, '0']
 - [pdu_pdu_to_tagged_stream_0, '0', blocks_file_sink_0, '0']
 - [pdu_tagged_stream_to_pdu_0, pdus, pdu_pdu_to_tagged_stream_0, pdus]
-- [soapy_hackrf_source_0, '0', analog_pwr_squelch_xx_0, '0']
 - [soapy_hackrf_source_0, '0', interp_fir_filter_xxx_0_0, '0']
-- [soapy_hackrf_source_0, '0', qtgui_sink_x_0, '0']
 - [soapy_hackrf_source_0, '0', qtgui_time_sink_x_0_2, '0']
-- [soapy_hackrf_source_0, '0', virtual_sink_0_2, '0']
-- [virtual_source_0, '0', qtgui_freq_sink_x_0, '0']
-- [virtual_source_0_1, '0', qtgui_freq_sink_x_0, '1']
 
 metadata:
   file_format: 1

@@ -259,24 +259,6 @@ class PSKRX(gr.top_block, Qt.QWidget):
 
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
-        self.qtgui_sink_x_0 = qtgui.sink_c(
-            1024, #fftsize
-            window.WIN_BLACKMAN_hARRIS, #wintype
-            0, #fc
-            samp_rate, #bw
-            "", #name
-            True, #plotfreq
-            True, #plotwaterfall
-            True, #plottime
-            True, #plotconst
-            None # parent
-        )
-        self.qtgui_sink_x_0.set_update_time(1.0/10)
-        self._qtgui_sink_x_0_win = sip.wrapinstance(self.qtgui_sink_x_0.qwidget(), Qt.QWidget)
-
-        self.qtgui_sink_x_0.enable_rf_freq(False)
-
-        self.top_layout.addWidget(self._qtgui_sink_x_0_win)
         self.pdu_tagged_stream_to_pdu_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, 'num_samples')
         self.pdu_pdu_to_tagged_stream_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'num_samples')
         self.interp_fir_filter_xxx_0_0 = filter.interp_fir_filter_ccf(1, h)
@@ -288,7 +270,7 @@ class PSKRX(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.digital_correlate_access_code_xx_ts_0 = digital.correlate_access_code_bb_ts('0011',
+        self.digital_correlate_access_code_xx_ts_0 = digital.correlate_access_code_bb_ts('00110011011000111',
           1, 'preamble_detected')
         self.digital_corr_est_cc_0 = digital.corr_est_cc(constellation, 1, 1, 0.5, digital.THRESHOLD_DYNAMIC)
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(digital.constellation_qpsk().base())
@@ -316,7 +298,6 @@ class PSKRX(gr.top_block, Qt.QWidget):
         self.connect((self.interp_fir_filter_xxx_0_0, 0), (self.digital_clock_recovery_mm_xx_0_0, 0))
         self.connect((self.pdu_pdu_to_tagged_stream_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.soapy_hackrf_source_0, 0), (self.interp_fir_filter_xxx_0_0, 0))
-        self.connect((self.soapy_hackrf_source_0, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.soapy_hackrf_source_0, 0), (self.qtgui_time_sink_x_0_2, 0))
 
 
@@ -364,7 +345,6 @@ class PSKRX(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.set_Fmax(self.samp_rate/2)
         self.set_Sps(int((self.bps*self.samp_rate)/self.Rb))
-        self.qtgui_sink_x_0.set_frequency_range(0, self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0_1.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0_2.set_samp_rate(self.samp_rate)
