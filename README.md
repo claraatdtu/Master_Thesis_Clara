@@ -35,6 +35,11 @@ For each, a random bitstream is generated, modulated, noise (AWGN) is added, and
 - Python 3.11.9 (for GNU Radio use and also for post-processing and plotting)
 - 2 HackRF One from GREAT SCOTT GADGETS (for the SDR measurements)
 
+## The codes were inspired from the following Github repositories:
+- Emile Binot. lora-simulator. https://github.com/EmileBinot/lora-simulator, March 2022. Accessed: 2025-04-20.
+- Nikesh Bajaj. Ask_psk_fsk. https://github.com/Nikeshbajaj/ASK_PSK_FSK, December 2015. Accessed: 2025-04-25.
+- Joachim Tapparel. gr-lora_sdr. https://github.com/tapparelj/gr-lora_sdr, January 2025. Accessed: 2025-05-08.
+- hortegab. Comdigpractices2021sii. https://github.com/hortegab/ComdigPractices2021sii, March 2022. Accessed: 2025-05-10.
 
 ## Problem Formulation of the Thesis report
 This project focuses on evaluating the spectrum efficiency and sensitivity of LoRa modulation
